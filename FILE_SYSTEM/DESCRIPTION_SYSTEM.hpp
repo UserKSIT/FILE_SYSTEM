@@ -20,18 +20,25 @@ using namespace bac;
 
 
 class Desp_sys{
-    friend class Descatalog;
 private:
     Descatalog *root;
-    User *table_users;
+    vector<User> table_users;
+    string current_user;
 public:
     Desp_sys();
     
-    Desp_sys & get_PTR_CATALOG() const;
-    Desp_sys & get_PTR_TABLE_USERS() const;
+    Desp_sys & get_root() const;
+    Desp_sys & get_table_users() const;
+    void get_stat() const;
     
-    Desp_sys & set_PTR_CATALOG();
-    Desp_sys & set_PTR_TABLE_USERS();
+    Desp_sys & set_root();
+    Desp_sys & change_table_users(const string &);
+    
+    int start_work(const string &);
+    int end_work();
+    int append_user(const string &, const string &);
+    
+    friend class Desfile;
 };
 
 #endif /* DESCRIPTION_SYSTEM_hpp */

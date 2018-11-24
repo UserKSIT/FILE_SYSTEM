@@ -11,7 +11,7 @@
 
 using namespace lcu;
 
-string * User::set_name(string * new_name){
+const string & User::set_name(const string & new_name){
     this->name = new_name;
     return this->name;
 }

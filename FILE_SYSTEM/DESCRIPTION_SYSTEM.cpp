@@ -8,12 +8,29 @@
 
 #include "DESCRIPTION_SYSTEM.hpp"
 #include <string>
+#include <vector>
 
 Desp_sys::Desp_sys(){
-    string * tmp = new string[5];
-    *tmp = "Admin";
     root = new Descatalog;
-    table_users = new User;
-    table_users->set_name(tmp);
-    delete [] tmp;
+}
+
+int Desp_sys::append_user(const string &id, const string &name){
+    User tmp;
+    tmp.set_id(id);
+    tmp.set_name(name);
+    tmp.set_info_key("");
+    
+    table_users.push_back(tmp);
+
+    return 1;
+}
+
+int Desp_sys::start_work(const string &id){
+    current_user = id;
+    return 1;
+}
+
+int Desp_sys::end_work(){
+    
+    return 1;
 }
