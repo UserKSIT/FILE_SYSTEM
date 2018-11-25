@@ -10,5 +10,23 @@
 #define STREAM_hpp
 
 #include <stdio.h>
+#include <string>
+#include <fstream>
+#include "BASIC_DESCRIPTION.hpp"
+
+using namespace std;
+
+class Desstream {
+    friend class Desfile;
+private:
+    string name;
+    ios::pos_type virtual_adress;
+    streamsize size;
+public:
+    Desstream(const string &name): name(name), virtual_adress(0){}
+    
+    const ios::pos_type & push_stream(const ios::pos_type &, streamsize &, const string &);
+    const string & pop_stream(ios::pos_type &);
+};
 
 #endif /* STREAM_hpp */

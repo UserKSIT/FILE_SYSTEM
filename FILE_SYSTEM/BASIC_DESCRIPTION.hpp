@@ -16,9 +16,10 @@
 #include "DESCRIPTION_SYSTEM.hpp"
 
 using namespace lcu;
+using namespace std;
 
 
-namespace bac {
+namespace cfc {
     struct Id{
         string name;
         string location;
@@ -41,25 +42,37 @@ namespace bac {
     
     class Descatalog: public Basic_description{
     private:
-        FILE * virtual_adress;
+        ios::pos_type virtual_adress;
         Basic_description * struct_catalog;
+        static const int size = 10;
+        int opp;
     public:
-        Descatalog();
-        ~Descatalog(){delete [] struct_catalog; delete virtual_adress;}
+        Descatalog(const Descatalog &);
+        ~Descatalog(){delete [] struct_catalog;}
         
         virtual Descatalog * clone() const {
             return new Descatalog(*this);
         }
-        void set_indentity(const string&, const string&);
+        virtual void set_indentity(const string&, const string&);
         
-        Descatalog & add_file();
+        //function add object - file or catalog
+        Descatalog & add_file(const Basic_description &);
         Descatalog & add_catalog();
         
-        Descatalog & open_file(const Basic_description *) const;
+        //function open file
         
-        int delete_file(const Basic_description &);
+        
+        //function delete object - file or catalog
+        
         int deleta_catalog(const Basic_description &);
+
+        Basic_description & search(const string &) const;
         
+        void exibition() const;
+        friend std::ostream & operator << (std::ostream &flow, const Descatalog &object);
+        
+        Descatalog &operator =(const Descatalog&);
+        Descatalog &operator =(Descatalog &&);
         
         
     };
@@ -68,15 +81,44 @@ namespace bac {
     protected:
         string time_last_mod;
         string master;
-        //Desstream * ptr_stream;
+        Desstream * ptr_stream;
     public:
+        Desfile();
+        
         virtual Desfile * clone() const {
             return new Desfile(*this);
         }
         
-        virtual void set_indentity(const string *, const string *);
+        virtual void set_indentity(const string &, const string &);
         
+        
+        
+        Desfile &operator =(const Desfile&);
+        Desfile &operator =(Desfile &&);
+        
+        void get_info() const;
+        void change_acess();
+        
+        //-----------------------------------------------------
+        
+        
+        ifstream & open_file_read(const Desfile &) const;//?
+        fstream & open_file_write(Desfile &);
+        
+        void close_file(ifstream &);
+        void close_file(fstream &);
+
+        ifstream & write_file(ifstream &);
+        fstream & write_file(fstream &);
+        
+        int delete_file(const Desfile &);
+        
+        friend std::ostream & operator << (std::ostream &flow,  fstream &object);//read file
+        friend std::ostream & operator << (std::ostream &flow,  ifstream &object);
+        //----------------------------------------------------
     };
+    
 }
+
 
 #endif /* BASIC_DESCRIPTION_hpp */

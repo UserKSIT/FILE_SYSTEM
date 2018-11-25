@@ -16,14 +16,18 @@
 #include <string>
 
 using namespace lcu;
-using namespace bac;
+using namespace cfc;
 
 
 class Desp_sys{
+    //friend class Desfile;
+    //friend class Descatalog;
 private:
-    Descatalog *root;
+    Descatalog * root;
     vector<User> table_users;
     string current_user;
+    int quantity_file;
+    int quantity_catalog;
 public:
     Desp_sys();
     
@@ -38,7 +42,7 @@ public:
     int end_work();
     int append_user(const string &, const string &);
     
-    friend class Desfile;
+
 };
 
 #endif /* DESCRIPTION_SYSTEM_hpp */

@@ -15,12 +15,13 @@
 using namespace lcu;
 using namespace ltmp;
 
-namespace bac {
-    Descatalog::Descatalog(): Basic_description(), struct_catalog(nullptr), virtual_adress(nullptr){
+namespace cfc {
+    Descatalog::Descatalog(const Descatalog &object): Basic_description(), virtual_adress(0), opp(object.opp){
         Basic_description::identity.name = "Admin";
         Basic_description::identity.location = "root/";
-        n = 1;
-        N = 1;
+        
+        for (int i = 0; i < opp; i++)
+            struct_catalog[i] = object.struct_catalog[i]->clone();
         
     }
     void Descatalog::set_indentity(const string &name, const string &location){
@@ -28,9 +29,13 @@ namespace bac {
         Basic_description::identity.location = location;
     }
     
-    Descatalog & Descatalog::add_file(){
-        if (n < N)  
-            struct_catalog[n++] = struct_catalog->clone();
+    Descatalog & Descatalog::add_file(const Basic_description &object){
+        if (opp < size)
+            struct_catalog[opp++] = object.clone();
         return *this;
+    }
+    
+    Basic_description & Descatalog::search(const string &) const{
+        
     }
 }
