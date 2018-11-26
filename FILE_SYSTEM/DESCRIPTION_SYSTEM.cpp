@@ -7,11 +7,21 @@
 //
 
 #include "DESCRIPTION_SYSTEM.hpp"
+#include "BASIC_DESCRIPTION.hpp"
 #include <string>
 #include <vector>
+#include <iostream>
+
 
 Desp_sys::Desp_sys(){
-    root = new Descatalog;
+    root = new Descatalog("Admin", "root/", "Admin", "rw");
+    hard_drive = new fstream;
+    hard_drive->open("FILE_SYSTEM.txt");
+    if (!hard_drive)
+        throw ;//std::system_error("File can't open");
+    current_user = "";
+    quantity_file = 0;
+    quantity_catalog = 0;
 }
 
 int Desp_sys::append_user(const string &id, const string &name){
@@ -31,6 +41,6 @@ int Desp_sys::start_work(const string &id){
 }
 
 int Desp_sys::end_work(){
-    
+    current_user = "";
     return 1;
 }

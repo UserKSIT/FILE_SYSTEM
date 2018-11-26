@@ -9,7 +9,7 @@
 #include "USER.hpp"
 #include <string>
 
-using namespace lcu;
+
 
 const string & User::set_name(const string & new_name){
     this->name = new_name;

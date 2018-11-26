@@ -14,20 +14,21 @@
 #include "BASIC_DESCRIPTION.hpp"
 #include <vector>
 #include <string>
+#include <fstream>
 
-using namespace lcu;
-using namespace cfc;
+
 
 
 class Desp_sys{
-    //friend class Desfile;
-    //friend class Descatalog;
+    friend class Desfile;
+    friend class Descatalog;
 private:
     Descatalog * root;
     vector<User> table_users;
     string current_user;
     int quantity_file;
     int quantity_catalog;
+    fstream * hard_drive;
 public:
     Desp_sys();
     

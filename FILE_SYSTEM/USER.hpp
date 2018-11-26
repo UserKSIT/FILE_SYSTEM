@@ -14,7 +14,6 @@
 
 using namespace std;
 
-namespace lcu {
     class Basic_user{
     protected:
         string id;
@@ -48,7 +47,6 @@ namespace lcu {
         const string & set_vista(const string &vista){this->vista = vista; return this->vista;}
         const string & get_vista() const {return vista;}
     };
-}
 
 
 

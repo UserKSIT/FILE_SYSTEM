@@ -17,7 +17,7 @@
 using namespace std;
 
 class Desstream {
-    friend class Desfile;
+    //friend class Desfile;
 private:
     string name;
     ios::pos_type virtual_adress;

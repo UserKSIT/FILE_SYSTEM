@@ -13,13 +13,12 @@
 #include <fstream>
 #include "USER.hpp"
 #include "STREAM.hpp"
-#include "DESCRIPTION_SYSTEM.hpp"
+#include <ctime>
+//#include "DESCRIPTION_SYSTEM.hpp"
 
-using namespace lcu;
 using namespace std;
 
 
-namespace cfc {
     struct Id{
         string name;
         string location;
@@ -29,31 +28,41 @@ namespace cfc {
     class Basic_description{
     protected:
         int size;
-        Level_access * access_users;
+        Level_access access_users;
         Id identity;
-        virtual void set_indentity(const string&, const string&);
     public:
-        Basic_description();
+        //Basic_description();
+        
+        void set_indentity(const string&, const string&);
         virtual Basic_description * clone() const = 0;
-        virtual ~Basic_description(){delete [] access_users;};
+        //virtual Basic_description &operator =(const Basic_description&) = 0;
+        //virtual Basic_description &operator =(Basic_description &&) = 0;
+        
+        virtual ~Basic_description(){};
+        
         
         
     };
     
     class Descatalog: public Basic_description{
     private:
-        ios::pos_type virtual_adress;
-        Basic_description * struct_catalog;
-        static const int size = 10;
+        int virtual_adress;
+        map <Id, Basic_description *> struct_catalog;
+        //Basic_description * struct_catalog;
         int opp;
+        int quant;
     public:
+        friend class Level_access;
+        
+        Descatalog(const string &, const string &, const string &, const string &);
         Descatalog(const Descatalog &);
+        
         ~Descatalog(){delete [] struct_catalog;}
         
         virtual Descatalog * clone() const {
             return new Descatalog(*this);
         }
-        virtual void set_indentity(const string&, const string&);
+        //virtual void set_indentity(const string&, const string&);
         
         //function add object - file or catalog
         Descatalog & add_file(const Basic_description &);
@@ -69,32 +78,34 @@ namespace cfc {
         Basic_description & search(const string &) const;
         
         void exibition() const;
-        friend std::ostream & operator << (std::ostream &flow, const Descatalog &object);
+        friend std::ostream & operator << (std::ostream &flow, const Descatalog &object);//virtual?
         
-        Descatalog &operator =(const Descatalog&);
-        Descatalog &operator =(Descatalog &&);
+        //virtual Descatalog &operator =(const Descatalog&);
+        //virtual Descatalog &operator =(Descatalog &&);
         
         
     };
     
     class Desfile: public Basic_description{
     protected:
-        string time_last_mod;
+        tm * timeinfo;
         string master;
         Desstream * ptr_stream;
     public:
-        Desfile();
+        Desfile(const string &, const string &, const string &, const string &);
+        Desfile(const Desfile &);
+        
         
         virtual Desfile * clone() const {
             return new Desfile(*this);
         }
         
-        virtual void set_indentity(const string &, const string &);
+        //virtual void set_indentity(const string &, const string &);
         
         
         
-        Desfile &operator =(const Desfile&);
-        Desfile &operator =(Desfile &&);
+        //virtual Desfile &operator =(const Desfile&);
+        //virtual Desfile &operator =(Desfile &&);
         
         void get_info() const;
         void change_acess();
@@ -102,23 +113,14 @@ namespace cfc {
         //-----------------------------------------------------
         
         
-        ifstream & open_file_read(const Desfile &) const;//?
-        fstream & open_file_write(Desfile &);
-        
-        void close_file(ifstream &);
-        void close_file(fstream &);
-
-        ifstream & write_file(ifstream &);
-        fstream & write_file(fstream &);
-        
-        int delete_file(const Desfile &);
-        
-        friend std::ostream & operator << (std::ostream &flow,  fstream &object);//read file
-        friend std::ostream & operator << (std::ostream &flow,  ifstream &object);
+        int open_file() const;
+        void close_file() const;
+        void write_file();
+        bool delete_file();
+        friend std::ostream & operator << (std::ostream &flow,  Desfile  &object);//read file
         //----------------------------------------------------
     };
     
-}
 
 
 #endif /* BASIC_DESCRIPTION_hpp */

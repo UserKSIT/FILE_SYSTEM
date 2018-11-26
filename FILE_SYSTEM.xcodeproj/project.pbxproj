@@ -265,9 +265,18 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = X3XRUZCH56;
-				HEADER_SEARCH_PATHS = "/Library_C++/Library_Template/Library_Template";
-				LIBRARY_SEARCH_PATHS = "/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/";
-				OTHER_LDFLAGS = "/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a";
+				HEADER_SEARCH_PATHS = (
+					"/Library_C++/Library_Template/Library_Template",
+					/usr/local/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/",
+					/usr/local/lib,
+				);
+				OTHER_LDFLAGS = (
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a",
+					/usr/local/lib/gtest.a,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -277,9 +286,18 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = X3XRUZCH56;
-				HEADER_SEARCH_PATHS = "/Library_C++/Library_Template/Library_Template";
-				LIBRARY_SEARCH_PATHS = "/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/";
-				OTHER_LDFLAGS = "/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a";
+				HEADER_SEARCH_PATHS = (
+					"/Library_C++/Library_Template/Library_Template",
+					/usr/local/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/",
+					/usr/local/lib,
+				);
+				OTHER_LDFLAGS = (
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a",
+					/usr/local/lib/gtest.a,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
