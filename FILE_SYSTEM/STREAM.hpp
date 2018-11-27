@@ -10,6 +10,7 @@
 #define STREAM_hpp
 
 #include <string>
+#include <map>
 
 using namespace std;
 

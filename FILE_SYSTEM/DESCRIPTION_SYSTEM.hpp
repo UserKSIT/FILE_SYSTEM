@@ -15,7 +15,6 @@
 #include <string>
 
 using namespace std;
-
 class Desp_sys{
 private:
     Descatalog * root;
@@ -55,5 +54,4 @@ public:
     
 
 };
-
 #endif /* DESCRIPTION_SYSTEM_hpp */

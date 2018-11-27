@@ -16,7 +16,6 @@
 
 using namespace std;
 
-
 Desp_sys::Desp_sys():quantity_file(0), quantity_catalog(1), current_user(""){
     root = new Descatalog("Admin", "root/", "Admin", "rw", this);
 }
@@ -128,4 +127,5 @@ void Desp_sys::get_stat() const{
     std::cout << "Quantity catalog = " << quantity_catalog << std::endl;
     /* обход иерхии*/
 }
+
 

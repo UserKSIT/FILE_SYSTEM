@@ -12,60 +12,83 @@
 #include "STREAM.hpp"
 #include <ctime>
 #include <map>
-#include <set>
-/*
+#include <string>
+//добавить проверку прав доступа
 using namespace std;
-//copy constructor for catalog
-Descatalog::Descatalog(const Descatalog &object){
-   // virtual_adress
-    
-    map <Id, Basic_description *>::iterator i;
 
-    Basic_description::size = sizeof(*this);
-    }*/
-//main constructor for catalog
-Descatalog::Descatalog(const string &name, const string &location, const string &master, const string &vista, Desp_sys *global){
+    Descatalog::Descatalog(const string &name, const string &location, const string &master, const string &vista, Desp_sys *global){
     //insert access_user
     ptr = global;
     virtual_adress = sizeof(global) + sizeof(global->table_users);
     Basic_description::size = sizeof(*this);
-}/*
-//main constructor for file
-Desfile::Desfile(const string &master, const string &name, const string &location, const string &vista): ptr_stream(nullptr){
-    time_t seconds = time(NULL);
-    timeinfo = localtime(&seconds);
-    
-    this->master = master;
-    
-    Basic_description::size = sizeof(*this);
-}
-//copy constructor for file
-Desfile::Desfile(const Desfile &object): ptr_stream(object.ptr_stream), timeinfo(object.timeinfo){
-
-    this->master = object.master;
-    
-    Basic_description::size = sizeof(*this);
 }
 
-//int Desfile::open_file() const{
-   // Desp_sys::hard_drive->seekg(*ptr_stream, std::ios::beg);//?
-    //return Desp_sys::hard_drive->tellg();
-//}
-
- virtual std::ostream & Descatalog::print(std::ostream &flow) const{
-    map <Id, Basic_description *>::iterator i;
-    for (i = struct_catalog.begin(); i < struct_catalog.end(); i++)
-        //flow << i.id.name << i.id.location << std::endl;
-    return flow;
+Descatalog::Descatalog(const Descatalog &object){
+    std::map<Id, Basic_description *>::const_iterator p;
+    for (p = object.struct_catalog.begin(); p != object.struct_catalog.end(); ++p)
+        struct_catalog.insert(std::make_pair(p->first, p->second->clone()));
+    //динамическое приведение
 }
 
-Descatalog & Descatalog::add_file(){
-        
-        return *this;
+Descatalog::~Descatalog(){
+    std::map<Id, Basic_description *>::iterator p;
+    for (p = struct_catalog.begin(); p != struct_catalog.end(); ++p){
+        delete p->second;
+        p->second = nullptr;
     }
-    
-    Basic_description & Descatalog::search(const string &) const{
-        
-    }
+}
 
-*/
+Descatalog& Descatalog::operator = (const Descatalog &object){
+    std::map<Id, Basic_description *>::iterator p;
+    if (this != &object){
+        for (p = struct_catalog.begin(); p != struct_catalog.end(); ++p)
+            delete p->second;
+        struct_catalog.clear();
+        
+        std::map<Id, Basic_description *>::const_iterator pp;
+        for (pp = object.struct_catalog.begin(); pp != object.struct_catalog.end(); ++pp)
+            struct_catalog.insert(std::make_pair(pp->first, pp->second->clone()));
+        //динамическое приведение к файлу и каталогу
+    }
+    return *this;
+}
+
+bool Descatalog::insert(const Id &indentity, const Basic_description *object){
+    bool res = false;
+    std::map<Id, Basic_description *>::iterator p = struct_catalog.find(indentity);
+    if (p == struct_catalog.end()){
+        std::pair<std::map<Id, Basic_description *>::iterator, bool> pp =
+        struct_catalog.insert(std::make_pair(indentity, object->clone()));
+        if (!pp.second)
+            throw std::out_of_range("can't insert new item into map");
+        //динамическое приведение к файлу
+        res = true;
+    }
+    return res;
+}
+
+bool Descatalog::remove(const Id &indentity)
+{
+    bool res = false;
+    std::map<Id, Basic_description *>::iterator p = struct_catalog.find(indentity);
+    if (p != struct_catalog.end()){
+        delete p->second;
+        p->second = nullptr;
+        struct_catalog.erase(p);
+        res = true;
+    }
+    return res;
+}
+
+bool Descatalog::replace(const Id &indentity, const Basic_description *object)
+{
+    bool res = false;
+    std::map<Id, Basic_description *>::iterator p = struct_catalog.find(indentity);
+    if (p != struct_catalog.end()){
+        delete p->second;
+        p->second = object->clone();
+        res = true;
+    }
+    return res;
+}
+

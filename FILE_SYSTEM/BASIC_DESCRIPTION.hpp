@@ -19,7 +19,6 @@
 
 using namespace std;
 
-
     struct Id{
         string name;
         string location;
@@ -31,13 +30,13 @@ using namespace std;
         int size;
         map<const string, const string> access_user;
         
-        //юvirtual std::ostream & print(std::ostream &) const = 0;
+        //virtual std::ostream & print(std::ostream &) const = 0;
     public:
         void set_indentity(const string&, const string&);
         
-        //virtual Basic_description * clone() const = 0;
+        virtual Basic_description * clone() const = 0;
         
-        //virtual ~Basic_description(){};
+        virtual ~Basic_description(){};
     };
     
     class Descatalog: public Basic_description{
@@ -52,10 +51,19 @@ using namespace std;
         Descatalog(const string &, const string &, const string &, const string &, Desp_sys *);
         Descatalog(const Descatalog &);
         
-        /*virtual Descatalog * clone() const {
-            return new Descatalog(*this);
-        }*/
+        ~Descatalog();
         
+        virtual Descatalog * clone() const {
+            return new Descatalog(*this);
+        }
+        
+        Descatalog& operator = (const Descatalog &);
+        
+        bool insert(const Id &, const Basic_description *);
+        
+        bool remove(const Id &);
+        
+        bool replace(const Id &, const Basic_description *);
         //function add object - file or catalog
         Descatalog & add_file(const Basic_description &);
         Descatalog & add_catalog();
@@ -80,13 +88,13 @@ using namespace std;
         Desstream ptr_stream;
         //virtual std::ostream & print(std::ostream &) const;
     public:
-        Desfile(const string &, const string &, const string &, const string &);
+       Desfile(const string &, const string &, const string &, const string &);
         Desfile(const Desfile &);
         
         
-        /*virtual Desfile * clone() const {
+        virtual Desfile * clone() const {
             return new Desfile(*this);
-        }*/
+        }
         
         void get_info() const;
         void change_acess();
@@ -99,7 +107,7 @@ using namespace std;
         //friend std::ostream & operator << (std::ostream &flow, Desfile &object){return object.print(flow);}
         //----------------------------------------------------
     };
-    
+
 
 
 #endif /* BASIC_DESCRIPTION_hpp */
