@@ -9,7 +9,6 @@
 #ifndef USER_hpp
 #define USER_hpp
 
-#include <stdio.h>
 #include <string>
 
 using namespace std;

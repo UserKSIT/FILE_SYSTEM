@@ -7,10 +7,6 @@
 //
 
 #include "STREAM.hpp"
-#include <stdio.h>
 #include <string>
 #include <fstream>
-#include <iostream>
-#include "BASIC_DESCRIPTION.hpp"
 
-Desstream(const string &name): name(name), virtual_adress(0){}

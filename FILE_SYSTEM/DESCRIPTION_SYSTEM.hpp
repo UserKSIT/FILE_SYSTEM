@@ -9,15 +9,11 @@
 #ifndef DESCRIPTION_SYSTEM_hpp
 #define DESCRIPTION_SYSTEM_hpp
 
-#include <stdio.h>
 #include "USER.hpp"
 #include "BASIC_DESCRIPTION.hpp"
 #include <vector>
 #include <string>
-#include <fstream>
-
-
-
+#include <iostream>
 
 class Desp_sys{
     friend class Desfile;
@@ -28,7 +24,6 @@ private:
     string current_user;
     int quantity_file;
     int quantity_catalog;
-    fstream * hard_drive;
 public:
     Desp_sys();
     

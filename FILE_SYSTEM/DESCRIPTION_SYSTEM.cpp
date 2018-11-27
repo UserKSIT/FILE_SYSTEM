@@ -8,6 +8,7 @@
 
 #include "DESCRIPTION_SYSTEM.hpp"
 #include "BASIC_DESCRIPTION.hpp"
+#include "USER.hpp"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -15,10 +16,6 @@
 
 Desp_sys::Desp_sys(){
     root = new Descatalog("Admin", "root/", "Admin", "rw");
-    hard_drive = new fstream;
-    hard_drive->open("FILE_SYSTEM.txt");
-    if (!hard_drive)
-        throw ;//std::system_error("File can't open");
     current_user = "";
     quantity_file = 0;
     quantity_catalog = 0;

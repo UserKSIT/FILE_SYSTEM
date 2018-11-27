@@ -9,15 +9,11 @@
 #ifndef STREAM_hpp
 #define STREAM_hpp
 
-#include <stdio.h>
 #include <string>
 #include <fstream>
-#include "BASIC_DESCRIPTION.hpp"
 
 using namespace std;
-
-class Desstream {
-    //friend class Desfile;
+class Desstream{
 private:
     string name;
     ios::pos_type virtual_adress;
