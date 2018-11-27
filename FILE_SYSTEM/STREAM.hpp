@@ -10,19 +10,19 @@
 #define STREAM_hpp
 
 #include <string>
-#include <fstream>
 
 using namespace std;
+
 class Desstream{
 private:
     string name;
-    ios::pos_type virtual_adress;
-    streamsize size;
+    int virtual_adress;
+    int size;
 public:
     Desstream(const string &name): name(name), virtual_adress(0){}
     
-    const ios::pos_type & push_stream(const ios::pos_type &, streamsize &, const string &);
-    const string & pop_stream(ios::pos_type &);
+    const int & push_stream(const int &, int &, const string &);
+    const string & pop_stream(int &);
 };
 
 #endif /* STREAM_hpp */

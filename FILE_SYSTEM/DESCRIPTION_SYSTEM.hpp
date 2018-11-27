@@ -11,32 +11,47 @@
 
 #include "USER.hpp"
 #include "BASIC_DESCRIPTION.hpp"
-#include <vector>
+#include <map>
 #include <string>
-#include <iostream>
+
+using namespace std;
 
 class Desp_sys{
-    friend class Desfile;
-    friend class Descatalog;
 private:
     Descatalog * root;
-    vector<User> table_users;
+    map<const string, User *> table_users;
     string current_user;
     int quantity_file;
     int quantity_catalog;
 public:
     Desp_sys();
-    
-    Desp_sys & get_root() const;
-    Desp_sys & get_table_users() const;
+    //return pointer root
+    //Desp_sys & get_root() const;
+    //retrun pointer table of users
+    //Desp_sys & get_table_users() const;
+    //retrun statistic
     void get_stat() const;
     
-    Desp_sys & set_root();
-    Desp_sys & change_table_users(const string &);
+    //All friends class's
+    friend class Desfile;
+    friend class Descatalog;
+    friend class User;
     
-    int start_work(const string &);
-    int end_work();
-    int append_user(const string &, const string &);
+    //set pointer root
+    Desp_sys & set_root();
+    //set table of users. Only for Admin
+    Desp_sys & change_table_users();
+
+    //start work with user
+    Desp_sys & start_work(const string &);
+    //end work
+    Desp_sys & end_work();
+    //append user in table of users
+    bool insert(const string &, const User *);
+    //delete user
+    bool remove(const string &);
+    //change parametr user
+    //bool change(const string &, const User *);
     
 
 };

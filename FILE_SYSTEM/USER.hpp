@@ -10,6 +10,7 @@
 #define USER_hpp
 
 #include <string>
+#include "DESCRIPTION_SYSTEM.hpp"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ using namespace std;
         const string & get_id() const {return this->id;}
         const string & set_id(const string &id) {this->id = id; return this->id;}
     };
-    
+  /*
     class User: public Basic_user{
     private:
         string name;
@@ -36,6 +37,22 @@ using namespace std;
         const string & set_name(const string &);
         const string & set_info_key(const string &);
     };
+*/
+class User{
+private:
+    string name;
+    string info_key;
+public:
+    User(const string &name = "", const string &id = ""): name(name), info_key(""){}
+    
+    const string & get_name();
+    const string & get_info_key();
+    
+    const string & set_name(const string &);
+    const string & set_info_key(const string &);
+    
+    friend std::istream & operator >> (std::istream &flow, User &object);
+};
     
     class Level_access: public Basic_user{
     private:

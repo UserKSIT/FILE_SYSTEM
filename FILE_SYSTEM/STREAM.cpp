@@ -8,5 +8,4 @@
 
 #include "STREAM.hpp"
 #include <string>
-#include <fstream>
 

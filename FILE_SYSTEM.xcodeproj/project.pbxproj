@@ -15,13 +15,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		AC4955512199F2DD002AF799 /* CopyFiles */ = {
+		AC4955512199F2DD002AF799 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -29,7 +30,7 @@
 /* Begin PBXFileReference section */
 		AC4955532199F2DD002AF799 /* FILE_SYSTEM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FILE_SYSTEM; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC4955562199F2DD002AF799 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		ACE3BBE9219B3D460087A3E9 /* DESCRIPTION_SYSTEM.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DESCRIPTION_SYSTEM.cpp; sourceTree = "<group>"; };
+		ACE3BBE9219B3D460087A3E9 /* DESCRIPTION_SYSTEM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DESCRIPTION_SYSTEM.cpp; sourceTree = "<group>"; };
 		ACE3BBEA219B3D460087A3E9 /* DESCRIPTION_SYSTEM.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = DESCRIPTION_SYSTEM.hpp; sourceTree = "<group>"; };
 		ACE3BBEC219B3D640087A3E9 /* USER.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = USER.cpp; sourceTree = "<group>"; };
 		ACE3BBED219B3D640087A3E9 /* USER.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = USER.hpp; sourceTree = "<group>"; };
@@ -54,7 +55,6 @@
 			isa = PBXGroup;
 			children = (
 				AC4955552199F2DD002AF799 /* FILE_SYSTEM */,
-				AC4955542199F2DD002AF799 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -64,6 +64,7 @@
 				AC4955532199F2DD002AF799 /* FILE_SYSTEM */,
 			);
 			name = Products;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		AC4955552199F2DD002AF799 /* FILE_SYSTEM */ = {
@@ -78,6 +79,7 @@
 				ACE3BBEC219B3D640087A3E9 /* USER.cpp */,
 				ACE3BBF2219B3E650087A3E9 /* STREAM.cpp */,
 				ACE3BBF5219B3E830087A3E9 /* BASIC_DESCRIPTION.cpp */,
+				AC4955542199F2DD002AF799 /* Products */,
 			);
 			path = FILE_SYSTEM;
 			sourceTree = "<group>";
@@ -91,7 +93,7 @@
 			buildPhases = (
 				AC49554F2199F2DD002AF799 /* Sources */,
 				AC4955502199F2DD002AF799 /* Frameworks */,
-				AC4955512199F2DD002AF799 /* CopyFiles */,
+				AC4955512199F2DD002AF799 /* Copy Files */,
 			);
 			buildRules = (
 			);
@@ -264,11 +266,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = X3XRUZCH56;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = "/Library_C++/Library_Template/Library_Template";
 				LIBRARY_SEARCH_PATHS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -277,11 +281,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = X3XRUZCH56;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = "/Library_C++/Library_Template/Library_Template";
 				LIBRARY_SEARCH_PATHS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

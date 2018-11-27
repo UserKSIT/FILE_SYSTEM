@@ -8,9 +8,6 @@
 
 #include <iostream>
 #include "DESCRIPTION_SYSTEM.hpp"
-#include "USER.hpp"
-#include "BASIC_DESCRIPTION.hpp"
-#include "STREAM.hpp"
 
 int main() {
     // insert code here...
