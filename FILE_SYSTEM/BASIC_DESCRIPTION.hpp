@@ -9,9 +9,9 @@
 #ifndef BASIC_DESCRIPTION_hpp
 #define BASIC_DESCRIPTION_hpp
 
-#include "USER.hpp"
+//#include "USER.hpp"
 #include "STREAM.hpp"
-#include "DESCRIPTION_SYSTEM.hpp"
+//#include "DESCRIPTION_SYSTEM.hpp"
 #include <ctime>
 #include <map>
 #include <vector>
