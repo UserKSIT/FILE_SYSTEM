@@ -17,12 +17,12 @@
 using namespace std;
 
 Desp_sys::Desp_sys():quantity_file(0), quantity_catalog(1), current_user(""){
-    root = new Descatalog("Admin", "root/", "Admin", "rw", this);
+    root = new Descatalog("Admin", "root/", "Admin", "rw");
 }
 
-bool Desp_sys::insert(const string &id, const User *object){
+/*bool Desp_sys::insert(const string &id, const User &object){
     bool res = false;
-    map<const string, User *>::iterator p = table_users.find(id);
+    map<const string, User>::iterator p = table_users.find(id);
     if (p == table_users.end()){
         pair<map<const string, User *>::iterator, bool> pp = table_users.insert(make_pair(id, object));
         if (!pp.second)
@@ -30,14 +30,14 @@ bool Desp_sys::insert(const string &id, const User *object){
         res = true;
     }
     return res;
-}
+}*/
 
 bool Desp_sys::remove(const std::string &id){
     bool res = false;
-    std::map<const std::string, User *>::iterator iter = table_users.find(id);
+    std::map<const std::string, User>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
-        delete iter->second;
-        iter->second = nullptr;
+        //delete iter->second;
+        //iter->second = nullptr;
         table_users.erase(iter);
         res = true;
     }
@@ -90,7 +90,7 @@ Desp_sys & Desp_sys::change_table_users(){
                 std::cin >> id;
                 std::cin.clear();
                 std::cin >> tmp;
-                insert(id, &tmp);
+                //insert(id, tmp);
                 break;
             }
             case 2:{

@@ -18,7 +18,7 @@ using namespace std;
 class Desp_sys{
 private:
     Descatalog * root;
-    map<const string, User *> table_users;
+    map<const string, User> table_users;
     string current_user;
     int quantity_file;
     int quantity_catalog;
@@ -46,7 +46,7 @@ public:
     //end work
     Desp_sys & end_work();
     //append user in table of users
-    bool insert(const string &, const User *);
+    bool insert(const string &, const User &);
     //delete user
     bool remove(const string &);
     //change parametr user

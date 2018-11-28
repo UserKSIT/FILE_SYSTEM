@@ -42,13 +42,13 @@ using namespace std;
     class Descatalog: public Basic_description{
     private:
         int virtual_adress;
-        map <Id, Basic_description *> struct_catalog;
-        Desp_sys * ptr;
+        map <const string, Basic_description *> struct_catalog;
+        //Desp_sys * ptr;
         //virtual std::ostream & print(std::ostream &) const;
     public:
         friend class Level_access;
         
-        Descatalog(const string &, const string &, const string &, const string &, Desp_sys *);
+        Descatalog(const string &, const string &, const string &, const string &);
         Descatalog(const Descatalog &);
         
         ~Descatalog();
@@ -59,11 +59,11 @@ using namespace std;
         
         Descatalog& operator = (const Descatalog &);
         
-        bool insert(const Id &, const Basic_description *);
+        bool insert(const string &, const Basic_description *);
         
-        bool remove(const Id &);
+        bool remove(const string &);
         
-        bool replace(const Id &, const Basic_description *);
+        bool replace(const string &, const Basic_description *);
         //function add object - file or catalog
         Descatalog & add_file(const Basic_description &);
         Descatalog & add_catalog();

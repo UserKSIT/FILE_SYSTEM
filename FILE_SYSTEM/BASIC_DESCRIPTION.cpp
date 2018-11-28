@@ -16,22 +16,22 @@
 //добавить проверку прав доступа
 using namespace std;
 
-    Descatalog::Descatalog(const string &name, const string &location, const string &master, const string &vista, Desp_sys *global){
+    Descatalog::Descatalog(const string &name, const string &location, const string &master, const string &vista){
     //insert access_user
-    ptr = global;
-    virtual_adress = sizeof(global) + sizeof(global->table_users);
+    //ptr = global;
+    //virtual_adress = sizeof(global) + sizeof(global->table_users);
     Basic_description::size = sizeof(*this);
 }
 
 Descatalog::Descatalog(const Descatalog &object){
-    std::map<Id, Basic_description *>::const_iterator p;
+    std::map<const string, Basic_description *>::const_iterator p;
     for (p = object.struct_catalog.begin(); p != object.struct_catalog.end(); ++p)
         struct_catalog.insert(std::make_pair(p->first, p->second->clone()));
     //динамическое приведение
 }
 
 Descatalog::~Descatalog(){
-    std::map<Id, Basic_description *>::iterator p;
+    std::map<const string, Basic_description *>::iterator p;
     for (p = struct_catalog.begin(); p != struct_catalog.end(); ++p){
         delete p->second;
         p->second = nullptr;
@@ -39,13 +39,13 @@ Descatalog::~Descatalog(){
 }
 
 Descatalog& Descatalog::operator = (const Descatalog &object){
-    std::map<Id, Basic_description *>::iterator p;
+    std::map<const string, Basic_description *>::iterator p;
     if (this != &object){
         for (p = struct_catalog.begin(); p != struct_catalog.end(); ++p)
             delete p->second;
         struct_catalog.clear();
         
-        std::map<Id, Basic_description *>::const_iterator pp;
+        std::map<const string, Basic_description *>::const_iterator pp;
         for (pp = object.struct_catalog.begin(); pp != object.struct_catalog.end(); ++pp)
             struct_catalog.insert(std::make_pair(pp->first, pp->second->clone()));
         //динамическое приведение к файлу и каталогу
@@ -53,12 +53,12 @@ Descatalog& Descatalog::operator = (const Descatalog &object){
     return *this;
 }
 
-bool Descatalog::insert(const Id &indentity, const Basic_description *object){
+bool Descatalog::insert(const string &name, const Basic_description *object){
     bool res = false;
-    std::map<Id, Basic_description *>::iterator p = struct_catalog.find(indentity);
+    std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p == struct_catalog.end()){
-        std::pair<std::map<Id, Basic_description *>::iterator, bool> pp =
-        struct_catalog.insert(std::make_pair(indentity, object->clone()));
+        std::pair<std::map<const string, Basic_description *>::iterator, bool> pp =
+        struct_catalog.insert(std::make_pair(name, object->clone()));
         if (!pp.second)
             throw std::out_of_range("can't insert new item into map");
         //динамическое приведение к файлу
@@ -67,10 +67,10 @@ bool Descatalog::insert(const Id &indentity, const Basic_description *object){
     return res;
 }
 
-bool Descatalog::remove(const Id &indentity)
+bool Descatalog::remove(const string &name)
 {
     bool res = false;
-    std::map<Id, Basic_description *>::iterator p = struct_catalog.find(indentity);
+    std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p != struct_catalog.end()){
         delete p->second;
         p->second = nullptr;
@@ -80,10 +80,10 @@ bool Descatalog::remove(const Id &indentity)
     return res;
 }
 
-bool Descatalog::replace(const Id &indentity, const Basic_description *object)
+bool Descatalog::replace(const string &name, const Basic_description *object)
 {
     bool res = false;
-    std::map<Id, Basic_description *>::iterator p = struct_catalog.find(indentity);
+    std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p != struct_catalog.end()){
         delete p->second;
         p->second = object->clone();
@@ -91,4 +91,3 @@ bool Descatalog::replace(const Id &indentity, const Basic_description *object)
     }
     return res;
 }
-
