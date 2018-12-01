@@ -10,20 +10,31 @@
 #define STREAM_hpp
 
 #include <string>
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <iomanip>
+
+extern std::fstream sys;
 
 using namespace std;
 
 class Desstream{
 private:
     string name;
-    int virtual_adress;
-    int size;
+    std::ios::pos_type virtual_adress;
+    static const int block = 508;
 public:
-    Desstream(const string &name): name(name), virtual_adress(0){}
+    Desstream(const string &);
     
-    const int & push_stream(const int &, int &, const string &);
-    const string & pop_stream(int &);
+    bool push_stream(const string &, const std::ios::pos_type &, int &);
+    bool delete_info(const std::ios::pos_type &, int &);
+    std::ostream & return_info(std::ostream &, const std::ios::pos_type &, const int &) const;
+    
+    std::ios::pos_type & open_stream_for_file(std::ios::pos_type &);
+    
 };
+
+int Input( char *, size_t);
 
 #endif /* STREAM_hpp */

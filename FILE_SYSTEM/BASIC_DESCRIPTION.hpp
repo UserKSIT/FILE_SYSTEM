@@ -9,46 +9,58 @@
 #ifndef BASIC_DESCRIPTION_hpp
 #define BASIC_DESCRIPTION_hpp
 
-//#include "USER.hpp"
 #include "STREAM.hpp"
-//#include "DESCRIPTION_SYSTEM.hpp"
 #include <ctime>
 #include <map>
 #include <vector>
-//#include "DESCRIPTION_SYSTEM.hpp"
+extern string current_user;
+extern string current_location;
+extern std::fstream sys;
+extern Desstream main_s;
+extern Desstream temp;
+extern Desstream sym;
 
 using namespace std;
 
-    struct Id{
-        string name;
-        string location;
-        Id (const string &name = "", const string &location = ""): name(name), location(location){}
-    };
-    
+    //parent's absract class for classes "Descatalog" and "Desfile"
     class Basic_description{
     protected:
+        //size object - file or directory
         int size;
+        //table access to object. Containing id user and level privileges
         map<const string, const string> access_user;
-        
-        //virtual std::ostream & print(std::ostream &) const = 0;
+        //way to object
+        string location;
+        //name object
+        string name;
+        virtual std::ostream & print(std::ostream &) const = 0;
     public:
-        void set_indentity(const string&, const string&);
+        void set_acess(const string&, const string&);
+        string & set_location(const string &);
+        int & set_size(int &);
+ 
+        bool insert_access(const string &, const string &);
+        
+        const string & get_name(){return name;}
         
         virtual Basic_description * clone() const = 0;
         
         virtual ~Basic_description(){};
     };
-    
+
+    //Class description directory. Include in itself struct catalog - table containing file and subdirectory
     class Descatalog: public Basic_description{
     private:
-        int virtual_adress;
+        //adress shift on disk(file)
+        std::ios::pos_type virtual_adress;
+        //table containing file and subdirectory
         map <const string, Basic_description *> struct_catalog;
-        //Desp_sys * ptr;
-        //virtual std::ostream & print(std::ostream &) const;
+        //print info table
+        virtual std::ostream & print(std::ostream &) const;
     public:
-        friend class Level_access;
+        Descatalog(const string &name):virtual_adress(sys.tellg()){location = current_location; this->insert_access(current_user, "rw"); size = sizeof(*this); this->name = name;}
         
-        Descatalog(const string &, const string &, const string &, const string &);
+        //Descatalog(const string &, const string &, const string &, const string &);
         Descatalog(const Descatalog &);
         
         ~Descatalog();
@@ -64,33 +76,40 @@ using namespace std;
         bool remove(const string &);
         
         bool replace(const string &, const Basic_description *);
+        
+        Basic_description & view(const string &);
+        
+        Descatalog * next(const string &);
         //function add object - file or catalog
-        Descatalog & add_file(const Basic_description &);
-        Descatalog & add_catalog();
+        Descatalog * add_object(const string &);
         
         //function open file
         
-        
         //function delete object - file or catalog
         
-        int deleta_catalog(const Basic_description &);
+        Descatalog * delete_catalog(const string &);
+        Descatalog * delete_file(const string &);
 
-        Basic_description & search(const string &) const;
+        //Des search(const string &) const;
         
-        void exibition() const;
-        //friend std::ostream & operator << (std::ostream &flow, const Descatalog &object){return object.print(flow);}
+        friend std::ostream & operator << (std::ostream &flow, const Descatalog &object){return object.print(flow);}
     };
-    
+    //Description file
     class Desfile: public Basic_description{
     protected:
+        //time last changes
         tm * timeinfo;
+        //id owner file
         string master;
-        Desstream ptr_stream;
-        //virtual std::ostream & print(std::ostream &) const;
+        //pointer to connected data stream
+        Desstream * ptr_stream;
+        //shift in data stream
+        std::ios::pos_type shift_stream;
+        //print info file
+        virtual std::ostream & print(std::ostream &) const;
     public:
-       Desfile(const string &, const string &, const string &, const string &);
-        Desfile(const Desfile &);
-        
+        Desfile(const string &name):master(current_user){ptr_stream = &main_s; shift_stream = main_s.open_stream_for_file(shift_stream); time_t t = time(0); timeinfo = localtime(&t);location = current_location; this->insert_access(current_user, "rw"); size = sizeof(*this);this->name = name;};
+        //Desfile(const string &, const string &, const string &, const string &);//to do
         
         virtual Desfile * clone() const {
             return new Desfile(*this);
@@ -103,10 +122,28 @@ using namespace std;
         int open_file() const;
         void close_file() const;
         void write_file();
-        bool delete_file();
-        //friend std::ostream & operator << (std::ostream &flow, Desfile &object){return object.print(flow);}
+        friend std::ostream & operator << (std::ostream &flow, Desfile &object){return object.print(flow);}
         //----------------------------------------------------
     };
+
+class ProtectedDesfile: public Desfile{
+private:
+    map <const string, const string> table_users_access;
+    virtual std::ostream & print(std::ostream &) const;
+public:
+    bool insert_user(const string &, const string &);
+    bool remove_user(const string &);
+    
+    friend std::ostream & operator << (std::ostream &flow, ProtectedDesfile &object){return object.print(flow);}
+};
+
+const std::string Sh[] = {"1. Catalog", "2. File", "0. Quit"};
+const int NumSh = sizeof(Sh) / sizeof(Sh[0]);
+
+int Answer(const std::string *, int);
+
+const std::string Choice = "Make your choice",
+Msg = "You are wrong; repeate please";
 
 
 

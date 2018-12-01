@@ -16,60 +16,59 @@
 
 using namespace std;
 
-Desp_sys::Desp_sys():quantity_file(0), quantity_catalog(1), current_user(""){
-    root = new Descatalog("Admin", "root/", "Admin", "rw");
+Desp_sys::Desp_sys(){
+    root = new Descatalog("root");
+    current_user = "";
+    current_location = "root/";
+    quantity_file = 0;
+    quantity_catalog = 1;
+    
 }
 
-/*bool Desp_sys::insert(const string &id, const User &object){
+bool Desp_sys::insert(const string &id, const User *object){
     bool res = false;
-    map<const string, User>::iterator p = table_users.find(id);
+    map<const string, User *>::iterator p = table_users.find(id);
     if (p == table_users.end()){
-        pair<map<const string, User *>::iterator, bool> pp = table_users.insert(make_pair(id, object));
+        pair<map<const string, User *>::iterator, bool> pp = table_users.insert(make_pair(id, object->clone()));
         if (!pp.second)
             throw std::out_of_range("can't insert new item into map");
         res = true;
     }
     return res;
-}*/
+}
 
 bool Desp_sys::remove(const std::string &id){
     bool res = false;
-    std::map<const std::string, User>::iterator iter = table_users.find(id);
+    std::map<const std::string, User *>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
-        //delete iter->second;
-        //iter->second = nullptr;
+        delete iter->second;
+        iter->second = nullptr;
         table_users.erase(iter);
         res = true;
     }
     return res;
 }
-/*
+
 bool Desp_sys::change(const string &id, const User *object){
     bool res = false;
     std::map<const std::string, User *>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
-        object->info_key = table_users[id]->info_key;
-        pair<map<const string, User *>::iterator, bool> pp = table_users.insert(make_pair(id, object));
+        //object->info_key = table_users[id]->info_key;
+        pair<map<const string, User *>::iterator, bool> pp = table_users.insert(make_pair(id, object->clone()));
         if (!pp.second)
             throw std::out_of_range("can't insert new item into map");
         res = true;
     }
     return res;
 }
-*/
 
 Desp_sys & Desp_sys::start_work(const string &id){
-    /*
-    open file and copy in RAM
-     */
     current_user = id;
     return *this;
 }
 
 Desp_sys & Desp_sys::end_work(){
-    /*
-     open file and copy in file
-     */
+    current_location = "root/";
     current_user = "";
     return *this;
 }

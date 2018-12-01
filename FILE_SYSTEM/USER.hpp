@@ -13,7 +13,7 @@
 //#include "DESCRIPTION_SYSTEM.hpp"
 
 using namespace std;
-
+/*
     class Basic_user{
     protected:
         string id;
@@ -22,7 +22,7 @@ using namespace std;
     
         const string & get_id() const {return this->id;}
         const string & set_id(const string &id) {this->id = id; return this->id;}
-    };
+    };*/
   /*
     class User: public Basic_user{
     private:
@@ -51,9 +51,13 @@ public:
     const string & set_name(const string &);
     const string & set_info_key(const string &);
     
+    virtual User * clone() const {
+        return new User(*this);
+    }
+    
     friend std::istream & operator >> (std::istream &flow, User &object);
 };
-    
+   /*
     class Level_access: public Basic_user{
     private:
         string vista;
@@ -63,7 +67,7 @@ public:
         const string & set_vista(const string &vista){this->vista = vista; return this->vista;}
         const string & get_vista() const {return vista;}
     };
-
+*/
 
 
 #endif /* USER_hpp */
