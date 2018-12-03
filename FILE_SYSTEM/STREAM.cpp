@@ -19,28 +19,49 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
     int edge = virtual_adress + shift;
     edge += size;
     sys.seekg(edge);
-    int residue = info.size() % block;
-    int quant;
-    char * next = new char[4];
-    int tmp;
+    int residue_block = size % (block - 4);
     std::ios::pos_type prev;
     string cur;
-    
-    if (residue < block){
-        //sys.seekg(residue);
-        sys.write(info.substr(0, block - residue).c_str(), block - residue);
+    int quant;
+
+    int dif = 0;
+    if (size == 0){
+        quant = info.size() / (block - 4);
+        if (quant > 0)
+            for (int i = 0; i <= quant; i++){
+                sys.write(info.substr(508*i, 508*(i + 1)).c_str(), 508);
+                
+                prev = sys.tellp();
+                sys.seekp(std::ios::end);
+                cur = sys.tellp();
+                sys.seekp(prev);
+                sys.write(cur.c_str(), 4);
+                sys.seekp(std::ios::end);
+            }
+        else
+            sys.write(info.substr(0, 508).c_str(), 508);
     }
-        quant = (info.size() - (block - residue)) / block;
-        for (int i = 0; i <= quant; i++){
-            prev = sys.tellp();
-            sys.seekp(std::ios::end);
-            cur = sys.tellp();
-            sys.seekp(prev);
-            sys.write(cur.c_str(), 4);
-            sys.seekp(std::ios::end);
+    else{
+        if (residue_block != 0){
+            sys.write(info.substr(0, block - 4 - residue_block).c_str(), block - 4 - residue_block);
+            dif = 1;
+
+            quant = (info.size() - dif*(block - 4 - residue_block)) / (block - 4);
+            if ( (info.size() - dif*(block - 4 - residue_block)) > 0)
+                for (int i = 0; i <= quant; i++){
+                    prev = sys.tellp();
+                    sys.seekp(std::ios::end);
+                    cur = sys.tellp();
+                    sys.seekp(prev);
+                    sys.write(cur.c_str(), 4);
+                    sys.seekp(std::ios::end);
             
-            sys.write(info.substr((info.size() - (block - residue)) - i * 508, (info.size() - (block - residue)) - 508 * (i + 1)).c_str(), 508);
+                    sys.write(info.substr((info.size() - dif*(block - 4 - residue_block)) - i * 508, (info.size() - dif*(block - 4 - residue_block)) - 508 * (i + 1)).c_str(), 508);
+                }
         }
+    }
+
+    size += info.size() + 1;
     return res;
 }
 //удаление информации
@@ -70,14 +91,19 @@ std::ostream & Desstream::return_info(std::ostream &flow, const std::ios::pos_ty
     int tmp;
     
     for(int i = 0; i < quant; i++){
-        sys.read(buf, block);
-        flow << buf << std::endl;
+        sys.read(buf, block - 4);
+        //flow << buf << std::endl;
+        for (int i = 0; i < block - 4; i++)
+            flow << buf[i];
+        flow << std::endl;
         sys.read(next, 4);
         tmp = Input(next, 4);
         sys.seekg(tmp);
     }
     sys.read(buf, residue);
-    flow << buf << std::endl;
+    for (int i = 0; i < residue; i++)
+        flow << buf[i];
+    flow << std::endl;
     
     delete [] buf;
     delete [] next;
@@ -87,7 +113,7 @@ std::ostream & Desstream::return_info(std::ostream &flow, const std::ios::pos_ty
 std::ios::pos_type & Desstream::open_stream_for_file(std::ios::pos_type &shift){
     sys.seekg(std::ios::end);
     shift = sys.tellg() - virtual_adress;
-    sys.write(0, 512);
+    sys.write("0", 512);
     return shift;
 }
 
@@ -111,3 +137,41 @@ int Input( char *s, size_t n )
     
     return std::atoi(s);
 }
+/*
+char *Get_String(void)
+{
+    char *ptr = (char *)malloc(sizeof(char) * 1);
+    
+    if (ptr == NULL)
+        return ptr;
+    
+    char buf[81];
+    int n, len = 0;
+    *ptr = '\0';
+    
+    do{
+        n = scanf("%80[^\n]", buf);
+        
+        if(n < 0)
+        {
+            free(ptr);
+            ptr = NULL;
+            continue;
+        }
+        
+        if(n == 0)
+            scanf("%*c");
+        else
+        {
+            len += strlen(buf);
+            ptr = (char *)realloc(ptr, len + 1);
+            
+            if (ptr == NULL)
+                return ptr;
+            
+            strcat(ptr, buf);
+        }
+    } while(n > 0);
+    
+    return ptr;
+}*/

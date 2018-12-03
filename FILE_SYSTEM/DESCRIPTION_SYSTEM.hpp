@@ -25,7 +25,7 @@ using namespace std;
 class Desp_sys{
 private:
     Descatalog * root;
-    map<const string, User *> table_users;
+    map<const string, User> table_users;
 public:
     Desp_sys();
     //return pointer root
@@ -35,6 +35,8 @@ public:
     //retrun statistic
     void get_stat() const;
     
+    bool check_in_table(const string &);
+    
     //All friends class's
     friend class Desfile;
     friend class Descatalog;
@@ -42,19 +44,17 @@ public:
     
     //set pointer root
     Desp_sys & set_root();
-    //set table of users. Only for Admin
-    Desp_sys & change_table_users();
 
     //start work with user
     Desp_sys & start_work(const string &);
     //end work
     Desp_sys & end_work();
     //append user in table of users
-    bool insert(const string &, const User *);
+    bool insert_user(const string &, const User &);
     //delete user
     bool remove(const string &);
     //change parametr user
-    bool change(const string &, const User *);
+    bool change(const string &, const User &);
     
 };
 #endif /* DESCRIPTION_SYSTEM_hpp */

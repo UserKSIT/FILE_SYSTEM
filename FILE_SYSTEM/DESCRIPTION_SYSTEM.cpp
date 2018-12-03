@@ -22,16 +22,24 @@ Desp_sys::Desp_sys(){
     current_location = "root/";
     quantity_file = 0;
     quantity_catalog = 1;
+    User object("ADMIN");
+    this->insert_user("ADMIN", object);
     
 }
 
-bool Desp_sys::insert(const string &id, const User *object){
+bool Desp_sys::check_in_table(const string &id){
+    map<const string, User>::iterator p = table_users.find(id);
+    if (p != table_users.end())
+        return true;
+    else
+        return false;
+}
+
+bool Desp_sys::insert_user(const string &id, const User &object){
     bool res = false;
-    map<const string, User *>::iterator p = table_users.find(id);
+    map<const string, User>::iterator p = table_users.find(id);
     if (p == table_users.end()){
-        pair<map<const string, User *>::iterator, bool> pp = table_users.insert(make_pair(id, object->clone()));
-        if (!pp.second)
-            throw std::out_of_range("can't insert new item into map");
+    table_users.insert(make_pair(id, object));
         res = true;
     }
     return res;
@@ -39,24 +47,22 @@ bool Desp_sys::insert(const string &id, const User *object){
 
 bool Desp_sys::remove(const std::string &id){
     bool res = false;
-    std::map<const std::string, User *>::iterator iter = table_users.find(id);
+    std::map<const std::string, User>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
-        delete iter->second;
-        iter->second = nullptr;
+        //delete iter->second;
+        //iter->second = nullptr;
         table_users.erase(iter);
         res = true;
     }
     return res;
 }
 
-bool Desp_sys::change(const string &id, const User *object){
+bool Desp_sys::change(const string &id, const User &object){
     bool res = false;
-    std::map<const std::string, User *>::iterator iter = table_users.find(id);
+    std::map<const std::string, User>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
         //object->info_key = table_users[id]->info_key;
-        pair<map<const string, User *>::iterator, bool> pp = table_users.insert(make_pair(id, object->clone()));
-        if (!pp.second)
-            throw std::out_of_range("can't insert new item into map");
+        table_users.insert(make_pair(id, object));
         res = true;
     }
     return res;
@@ -71,54 +77,6 @@ Desp_sys & Desp_sys::end_work(){
     current_location = "root/";
     current_user = "";
     return *this;
-}
-
-Desp_sys & Desp_sys::change_table_users(){
-    if (current_user == "Admin"){
-        int choice;
-        std::cout << "1. Append user" << std::endl;
-        std::cout << "2. Delete user" << std::endl;
-        //std::cout << "3. Change user" << std::endl;
-        switch (ltmp::GET_NUM(choice, 2)) {
-            case 0:
-                break;
-            case 1:{
-                User tmp;
-                string id;
-                std::cout << "Id = ";
-                std::cin >> id;
-                std::cin.clear();
-                std::cin >> tmp;
-                //insert(id, tmp);
-                break;
-            }
-            case 2:{
-                string id;
-                std::cout << "Id = ";
-                std::cin >> id;
-                std::cin.clear();
-                remove(id);
-                break;
-            }
-            /*case 3:{
-                User tmp;
-                string id;
-                std::cout << "Id = ";
-                std::cin >> id;
-                std::cin.clear();
-                std::cin >> tmp;
-                
-                break;
-            }*/
-            default:
-                break;
-        }
-        return *this;
-    }
-    else{
-        std::cout << "You are not authorized to do this" << std::endl;
-        return *this;
-    }
 }
 
 void Desp_sys::get_stat() const{

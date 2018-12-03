@@ -13,61 +13,22 @@
 //#include "DESCRIPTION_SYSTEM.hpp"
 
 using namespace std;
-/*
-    class Basic_user{
-    protected:
-        string id;
-    public:
-        Basic_user(const string &id = ""): id(id){}
-    
-        const string & get_id() const {return this->id;}
-        const string & set_id(const string &id) {this->id = id; return this->id;}
-    };*/
-  /*
-    class User: public Basic_user{
-    private:
-        string name;
-        string info_key;
-    public:
-        User(const string &name = "", const string &id = ""): Basic_user(id), name(name), info_key(nullptr) {this->id = id;}
-        
-        const string & get_name();
-        const string & get_info_key();
-        
-        const string & set_name(const string &);
-        const string & set_info_key(const string &);
-    };
-*/
+
 class User{
 private:
     string name;
     string info_key;
 public:
-    User(const string &name = "", const string &id = ""): name(name), info_key(""){}
+    User(const string &name = ""): name(name), info_key(""){}
     
-    const string & get_name();
-    const string & get_info_key();
+    const string & get_name() {return name;}
+    const string & get_info_key() {return info_key;}
     
-    const string & set_name(const string &);
-    const string & set_info_key(const string &);
-    
-    virtual User * clone() const {
-        return new User(*this);
-    }
+    const string & set_name(const string &_name) {name = _name; return name; }
+    const string & set_info_key(const string &_key) {info_key = _key; return info_key;}
     
     friend std::istream & operator >> (std::istream &flow, User &object);
 };
-   /*
-    class Level_access: public Basic_user{
-    private:
-        string vista;
-    public:
-        Level_access(const string &vista = "", const string &id = ""): Basic_user(id), vista(vista){this->id = id;}
-        
-        const string & set_vista(const string &vista){this->vista = vista; return this->vista;}
-        const string & get_vista() const {return vista;}
-    };
-*/
 
 
 #endif /* USER_hpp */
