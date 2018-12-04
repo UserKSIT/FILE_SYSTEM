@@ -19,14 +19,15 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
     int edge = virtual_adress + shift;
     edge += size;
     sys.seekg(edge);
-    int residue_block = size % (block - 4);
-    std::ios::pos_type prev;
+    int residue_block = size % block;
+    std::ios::pos_type prev = 0;
     string cur;
-    int quant;
+    int quant = 0;
 
+    
     int dif = 0;
     if (size == 0){
-        quant = info.size() / (block - 4);
+        quant = info.size() / block;
         if (quant > 0)
             for (int i = 0; i <= quant; i++){
                 sys.write(info.substr(508*i, 508*(i + 1)).c_str(), 508);
@@ -43,11 +44,12 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
     }
     else{
         if (residue_block != 0){
-            sys.write(info.substr(0, block - 4 - residue_block).c_str(), block - 4 - residue_block);
+            sys.write(info.substr(0, block - residue_block).c_str(), block - residue_block);
             dif = 1;
-
-            quant = (info.size() - dif*(block - 4 - residue_block)) / (block - 4);
-            if ( (info.size() - dif*(block - 4 - residue_block)) > 0)
+            
+            int check = (info.size() - dif*(block - residue_block));
+            if ( check > 0){
+                quant = check / block;
                 for (int i = 0; i <= quant; i++){
                     prev = sys.tellp();
                     sys.seekp(std::ios::end);
@@ -55,11 +57,13 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
                     sys.seekp(prev);
                     sys.write(cur.c_str(), 4);
                     sys.seekp(std::ios::end);
-            
-                    sys.write(info.substr((info.size() - dif*(block - 4 - residue_block)) - i * 508, (info.size() - dif*(block - 4 - residue_block)) - 508 * (i + 1)).c_str(), 508);
+                    
+                    sys.write(info.substr((info.size() - dif*(block - residue_block)) - i * 508, (info.size() - dif*(block - residue_block)) - 508 * (i + 1)).c_str(), 508);
                 }
+            }
         }
     }
+
 
     size += info.size() + 1;
     return res;
@@ -91,15 +95,17 @@ std::ostream & Desstream::return_info(std::ostream &flow, const std::ios::pos_ty
     int tmp;
     
     for(int i = 0; i < quant; i++){
-        sys.read(buf, block - 4);
-        //flow << buf << std::endl;
-        for (int i = 0; i < block - 4; i++)
+        sys.read(buf, block);
+        
+        for (int i = 0; i < block; i++)
             flow << buf[i];
         flow << std::endl;
+        
         sys.read(next, 4);
         tmp = Input(next, 4);
         sys.seekg(tmp);
     }
+
     sys.read(buf, residue);
     for (int i = 0; i < residue; i++)
         flow << buf[i];
@@ -108,6 +114,32 @@ std::ostream & Desstream::return_info(std::ostream &flow, const std::ios::pos_ty
     delete [] buf;
     delete [] next;
     return flow;
+}
+
+char * Desstream::return_info(const std::ios::pos_type &shift, const int &size) const {
+    sys.seekg(virtual_adress + shift);
+    int quant = size / block;
+    int residue = size % block;
+    
+    char * buf = new char[size];
+    char * next = new char[4];
+    int tmp;
+    
+    for(int i = 0; i < quant; i++){
+        for(int __i = i * block; __i < (i + 1) * block; __i++)
+            sys >> buf[__i];
+ 
+        sys.read(next, 4);
+        tmp = Input(next, 4);
+        sys.seekg(tmp);
+    }
+    
+    sys.read(buf, residue);
+    for (int i = (quant - 1) * block; i < ((quant - 1) * block + residue); i++)
+        sys >> buf[i];
+    
+    delete [] next;
+    return buf;
 }
 //резервация места при добавлении файла
 std::ios::pos_type & Desstream::open_stream_for_file(std::ios::pos_type &shift){
@@ -137,41 +169,11 @@ int Input( char *s, size_t n )
     
     return std::atoi(s);
 }
-/*
-char *Get_String(void)
+
+void Desstream::init_stream(const string &name)
 {
-    char *ptr = (char *)malloc(sizeof(char) * 1);
-    
-    if (ptr == NULL)
-        return ptr;
-    
-    char buf[81];
-    int n, len = 0;
-    *ptr = '\0';
-    
-    do{
-        n = scanf("%80[^\n]", buf);
-        
-        if(n < 0)
-        {
-            free(ptr);
-            ptr = NULL;
-            continue;
-        }
-        
-        if(n == 0)
-            scanf("%*c");
-        else
-        {
-            len += strlen(buf);
-            ptr = (char *)realloc(ptr, len + 1);
-            
-            if (ptr == NULL)
-                return ptr;
-            
-            strcat(ptr, buf);
-        }
-    } while(n > 0);
-    
-    return ptr;
-}*/
+    this->name = name;
+    sys.seekg(std::ios::end);
+    virtual_adress = sys.tellg();
+}
+

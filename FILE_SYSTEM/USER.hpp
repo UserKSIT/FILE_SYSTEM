@@ -10,7 +10,6 @@
 #define USER_hpp
 
 #include <string>
-//#include "DESCRIPTION_SYSTEM.hpp"
 
 using namespace std;
 
@@ -21,8 +20,8 @@ private:
 public:
     User(const string &name = ""): name(name), info_key(""){}
     
-    const string & get_name() {return name;}
-    const string & get_info_key() {return info_key;}
+    const string & get_name() const {return name;}
+    const string & get_info_key() const {return info_key;}
     
     const string & set_name(const string &_name) {name = _name; return name; }
     const string & set_info_key(const string &_key) {info_key = _key; return info_key;}

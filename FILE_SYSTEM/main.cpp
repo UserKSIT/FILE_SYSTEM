@@ -6,13 +6,13 @@
 //  Copyright © 2018 Ерошев Артём. All rights reserved.
 //
 
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
-#include "gtest/gtest.h"
-//#include <string>
 #include "DESCRIPTION_SYSTEM.hpp"
-#include "Library_Template.hpp"
-//#include "INTERFACE.hpp"
+#include "gtest/gtest.h"
+
+
 fstream sys;
 
 string current_user;
@@ -20,25 +20,12 @@ string current_location;
 
 int tag = 0;
 
-Desstream main_s("MAIN");
-Desstream temp("TEMP");
-Desstream sym("SYMKEY");
+Desstream main_s;
+Desstream temp;
+Desstream sym;
 
 int quantity_file;
 int quantity_catalog;
-
-
-const std::string Names[] = { "Unknown", "Circle", "Rectangle" };
-const std::string Menu_Catalog[] = { "1. Add a object", "2. Find a object",
-    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "0. End work" };
-const std::string Menu_File_1[] = { "1. Show info", "0. Close file"};
-const std::string Menu_File_2[] = {"1. Write info", "0. Close file"};
-const std::string Menu_File_3[] = {"1. Write info", "2. Read info", "0. Close file"};
-
-const std::string Menu_start[] = {"1. Start work", "2. Change table users","0. Quit programm"};
-
-//const std::string Choice = "Make your choice";
-//const std::string Msg = "You are wrong; repeate please";
 
 int Answer(const std::string alt[], int n);
 
@@ -55,8 +42,17 @@ int Read(Desfile *);
 
 int Work(Desp_sys &);
 int Change_Table(Desp_sys &);
+int Get_status(Desp_sys &);
 
 char *Get_String(void);
+
+const std::string Menu_Catalog[] = { "1. Add a object", "2. Find a object",
+    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog/don't work", "7. Back/don't work", "0. End work" };
+const std::string Menu_File_1[] = { "1. Show info", "0. Close file"};
+const std::string Menu_File_2[] = {"1. Write info", "0. Close file"};
+const std::string Menu_File_3[] = {"1. Write info", "2. Read info", "0. Close file"};
+
+const std::string Menu_start[] = {"1. Start work", "2. Change table users", "3. Show statistic", "0. Quit programm"};
 
 int(*Funcs[])(Descatalog *) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC};
 
@@ -64,7 +60,7 @@ int(*Funcs_file1[])(Desfile *) = {nullptr, Read};
 int(*Funcs_file2[])(Desfile *) = {nullptr, Write};
 int(*Funcs_file3[])(Desfile *) = {nullptr, Write, Read};
 
-int(*Func_work[])(Desp_sys &) = { nullptr, Work, Change_Table};
+int(*Func_work[])(Desp_sys &) = { nullptr, Work, Change_Table, Get_status};
 
 const int NumWork = sizeof(Menu_start)/sizeof(Menu_start[0]);
 
@@ -73,6 +69,12 @@ const int NumCatalog = sizeof(Menu_Catalog)/sizeof(Menu_Catalog[0]);
 const int NumFile1 = sizeof(Funcs_file1)/sizeof(Funcs_file1[0]);
 const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
+
+int Get_status(Desp_sys &object){
+    std::cout << "Quantity file: " << quantity_file << std::endl;
+    std::cout << "Quantity catalog: " << quantity_catalog << std::endl;
+    return 0;
+}
 
 int Change_Table(Desp_sys &object){
     std::string user;
@@ -85,11 +87,12 @@ int Change_Table(Desp_sys &object){
         int choice;
         std::cout << "1. Append user" << std::endl;
         std::cout << "2. Delete user" << std::endl;
-        switch (ltmp::GET_NUM(choice, 2)) {
+        std::cout << "3. Show table" << std::endl;
+        ltmp::GET_NUM(choice, 3);
+        switch (choice) {
             case 0:
                 break;
             case 1:{
-                
                 string id, name;
                 std::cout << "Id = ";
                 std::cin >> id;
@@ -109,7 +112,8 @@ int Change_Table(Desp_sys &object){
                 object.remove(id);
                 break;
             }
-            default:
+            case 3:
+                std::cout << object << std::endl;
                 break;
         }
         return 0;
@@ -212,15 +216,21 @@ int ShowAll(Descatalog *view){
     return 0;
 }
 
-int NextC(Descatalog *view){
+int NextC(Descatalog *view){//не работает
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
-    view = view->next(name);
-    if (view != nullptr)
+    Basic_description * ptr = view->next(name);
+    Descatalog * next = dynamic_cast<Descatalog *>(ptr);
+    current_location += next->get_name();
+    current_location += "/";
+    if (next != nullptr){
         std::cout << "Ok" << std::endl;
+        next->set_parent(view);
+        view = next;
+    }
     else
         std::cout << "The object with Name \"" << name << "\" is absent in container"
         << std::endl;
@@ -240,21 +250,32 @@ int OpenF(Descatalog *view){
     if (res > 0){
         Desfile * ptr = dynamic_cast<Desfile *>(Bptr);
         if (res == 1){
-            while (ind = Answer(Menu_File_1, NumFile1))
-                Funcs_file1[ind](ptr);
-            return 0;
+            try {
+                while (ind = Answer(Menu_File_1, NumFile1))
+                    Funcs_file1[ind](ptr);
+            } catch (const std::exception &er) {
+                std::cout << er.what() << std::endl;
+            }
         }
         if (res == 2){
-            while (ind = Answer(Menu_File_2, NumFile2))
-                Funcs_file2[ind](ptr);
-            return 0;
+            try {
+                while (ind = Answer(Menu_File_2, NumFile2))
+                    Funcs_file2[ind](ptr);
+            } catch (const std::exception &er) {
+                std::cout << er.what() << std::endl;
+            }
         }
         if (res == 3){
-            while (ind = Answer(Menu_File_3, NumFile3))
-                Funcs_file3[ind](ptr);
-            return 0;
+            try {
+                while (ind = Answer(Menu_File_3, NumFile3))
+                    Funcs_file3[ind](ptr);
+            } catch (const std::exception &er) {
+                std::cout << er.what() << std::endl;
+            }
         }
+        ptr->close_file();
     }
+    
     return 0;
 }
 
@@ -267,55 +288,25 @@ int BackC(Descatalog *view){
     return 0;
 }
 
-char *Get_String(void)
-{
-    char *ptr = (char *)malloc(sizeof(char) * 1);
-    if (ptr == NULL)
-        return ptr;
-    
-    char buf[81];
-    int n, len = 0;
-    *ptr = '\0';
-    do{
-        n = scanf("%80[^\n]", buf);
-    
-        if(n < 0)
-        {
-            free(ptr);
-            ptr = NULL;
-            continue;
-        }
-        
-        if(n == 0)
-            scanf("%*c");
-        else
-        {
-            len += strlen(buf);
-            ptr = (char *)realloc(ptr, len + 1);
-            
-            if (ptr == NULL)
-                return ptr;
-            
-            strcat(ptr, buf);
-        }
-    } while(n > 0);
-    
-    return ptr;
-}
-
 int main(int argc, char * argv[]) {
     sys.open("/Programms C++/FILE_SYSTEM/FILE_SYSTEM/FILE_SYSTEM.bin", std::ios::in | std::ios::out | std::ios::binary);
+    sys.clear();
     if (sys.is_open())
         std::cout << "File is open\n";
-    else
-        std::cout << "Fuck you nigga\n";
-    /*
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();*/
+    else{
+        std::cout << "Fatal error\n";
+        return 0;
+    }
     
+    main_s.init_stream("MAIN");
+    temp.init_stream("TEMP");
+    sym.init_stream("SYMKEY");
+    
+    //::testing::InitGoogleTest(&argc, argv);
+    //return RUN_ALL_TESTS();
     
     Desp_sys SYSTEM;
-    
+ 
     int ind;
     try{
         while ((ind = Answer(Menu_start, NumWork)))
@@ -325,8 +316,6 @@ int main(int argc, char * argv[]) {
     {
         std::cout << er.what() << std::endl;
     }
-
-    
 
     std::cout << "That's all. Buy!" << std::endl;
        sys.close();
@@ -339,18 +328,15 @@ TEST(StreamFunction, PushInfo){
     istringstream flow;
     string info;
     std::cout << "Input info" << std::endl;
-    //flow >> info;
+
     getline(cin, info);
-    //std::cin >> info;
-    for (int i = 0; i < 1024; i++)
+
+    for (int i = 0; i < 1000; i++){
         object.write_file(info);
+    }
     
     std::cout << "Look -> ";
     std::cout << object << std::endl;
 }
 
-//to do
-//нормальный ввод строки с пробелами
-//нормальный дотсуп если rw
-//начало работы
-//переделать считывание в поток
+

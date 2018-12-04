@@ -7,7 +7,6 @@
 //
 
 #include "BASIC_DESCRIPTION.hpp"
-//#include "DESCRIPTION_SYSTEM.hpp"
 #include "USER.hpp"
 #include "STREAM.hpp"
 #include <ctime>
@@ -17,11 +16,12 @@
 //добавить проверку прав доступа
 using namespace std;
 
+//дополняющий конструктор
 Descatalog::Descatalog(const Descatalog &object){
+    
     std::map<const string, Basic_description *>::const_iterator p;
     for (p = object.struct_catalog.begin(); p != object.struct_catalog.end(); ++p)
         struct_catalog.insert(std::make_pair(p->first, p->second->clone()));
-    //динамическое приведение
 }
 
 Descatalog::~Descatalog(){
@@ -31,10 +31,20 @@ Descatalog::~Descatalog(){
         p->second = nullptr;
     }
 }
-
+//копирующий конструктор
 Descatalog& Descatalog::operator = (const Descatalog &object){
     std::map<const string, Basic_description *>::iterator p;
     if (this != &object){
+        size = object.size;
+        location = object.location;
+        name = object.name;
+        //------------------------------
+        access_user.clear();
+        
+        std::map<const string, const string>::const_iterator bb;
+        for (bb = object.access_user.begin(); bb != object.access_user.end(); ++bb)
+            access_user.insert(std::make_pair(bb->first, bb->second));
+        //----------------------------------------------------------
         for (p = struct_catalog.begin(); p != struct_catalog.end(); ++p)
             delete p->second;
         struct_catalog.clear();
@@ -42,11 +52,26 @@ Descatalog& Descatalog::operator = (const Descatalog &object){
         std::map<const string, Basic_description *>::const_iterator pp;
         for (pp = object.struct_catalog.begin(); pp != object.struct_catalog.end(); ++pp)
             struct_catalog.insert(std::make_pair(pp->first, pp->second->clone()));
-        //динамическое приведение к файлу и каталогу
+    }
+    return *this;
+}
+//копирующий конструктор
+Basic_description& Basic_description::operator = (const Basic_description &object){
+    if (this != &object){
+        size = object.size;
+        location = object.location;
+        name = object.name;
+        //------------------------------
+        access_user.clear();
+        
+        std::map<const string, const string>::const_iterator pp;
+        for (pp = object.access_user.begin(); pp != object.access_user.end(); ++pp)
+            access_user.insert(std::make_pair(pp->first, pp->second));
     }
     return *this;
 }
 
+//вставка файла или подкатолога
 bool Descatalog::insert(const string &name, const Basic_description *object){
     bool res = false;
     std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
@@ -55,13 +80,10 @@ bool Descatalog::insert(const string &name, const Basic_description *object){
         struct_catalog.insert(std::make_pair(name, object->clone()));
         if (!pp.second)
             throw std::out_of_range("can't insert new item into map");
-        //динамическое приведение к файлу
         res = true;
     }
     return res;
 }
-
-
 
 bool Descatalog::remove(const string &name)// to do
 {
@@ -98,22 +120,18 @@ bool Descatalog::replace(const string &name, const Basic_description *object)
     return res;
 }
 
-Descatalog * Descatalog::next(const string &name){// to do
+Basic_description * Descatalog::next(const string &name){// to do
     
     std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p != struct_catalog.end()){
         //динамическое приведение типа
-        Descatalog * ptr = dynamic_cast<Descatalog *>(p->second);
-        ptr->set_parent(this);
-        if (ptr){
-            current_location = current_location + ptr->get_name();
-            return ptr;
+        //Descatalog * ptr = dynamic_cast<Descatalog *>(p->second);
+        //if (ptr){
+            //current_location = current_location + ptr->get_name();
+            return p->second;
         }
         else
             return nullptr;
-    }
-    else
-        return nullptr;
 }
 
 Descatalog * Descatalog::back(){
@@ -134,22 +152,32 @@ Descatalog * Descatalog::add_object(const string &id){
     Descatalog catalog(id);
     catalog.set_parent(this);
     Desfile file(id);
-    int ans;
-    ans = Answer(Sh, NumSh);
+    
+    int ans = Answer(Sh, NumSh);
         if (!std::cin.good())
             throw std::out_of_range("Error when a category object was entered");
         switch (ans){
-            case 1:
+            case 1:{
+                
+                quantity_catalog++;
                 ptr = &catalog;
                 break;
-            case 2:
+            }
+            case 2:{
+                // почему если вставить сюда происходит SIGABIRT - вызывается чисто виртуальная ф-ция?
+                quantity_file++;
                 ptr = &file;
                 break;
+            }
         }
+    if (ptr != nullptr){
         if (this->insert(id, ptr))
             std::cout << "Ok" << std::endl;
         else
             std::cout << "Duplicate name" << std::endl;
+    }
+    else
+        std::cout << "Wtf?" << std::endl;
     return this;
 }
 
@@ -307,7 +335,7 @@ bool Desfile::close_file() const{
         return true;
     }
     else{
-        std::cout << "There haven't opeb file" << std::endl;
+        std::cout << "There haven't open file" << std::endl;
         return false;
     }
 }
@@ -321,13 +349,13 @@ bool Basic_description::check_access(const string &id, const string &mode){
     bool res = false;
     std::map<const string, const string>::iterator p = access_user.find(id);
     if (p != access_user.end()){
-        if (p->second == mode){
-            res = true;
-            return res;
+        if (p->second == "rw")
+            return true;
+        if (p->second == mode)
+            return true;
         }
         else
             return res;
-    }
     return res;
 }
 map <const string, Basic_description *>::const_iterator Descatalog::find(const string &name) const {
@@ -339,13 +367,111 @@ map <const string, Basic_description *>::const_iterator Descatalog::find(const s
         }
     return p;
 }
-
-bool Desfile::crypt_file(){
-    if (size <= 0)
-        return false;
-    
-    return true;
+//копирующий конструктор
+Desfile& Desfile::operator = (const Desfile &object)
+{
+    if(this != &object){
+        //-----------------------------
+        size = 0;
+        location = object.location;
+        name = object.name;
+        
+        access_user.clear();
+        
+        std::map<const string, const string>::const_iterator pp;
+        for (pp = object.access_user.begin(); pp != object.access_user.end(); ++pp)
+            access_user.insert(std::make_pair(pp->first, pp->second));
+        //-----------------------------
+        
+        timeinfo = object.timeinfo;
+        master = object.master;
+        ptr_stream = object.ptr_stream;
+        
+        //--------------------------------------
+        ptr_stream->delete_info(shift_stream, size);
+        
+        shift_stream = ptr_stream->open_stream_for_file(shift_stream);
+        
+        ptr_stream->push_stream(object.ptr_stream->return_info(object.shift_stream, object.size), shift_stream, size);
+        //----------------------------------------
+    }
+    return *this;
 }
+
+/*Descatalog & change_access(const string &){
+    
+}*/
+
+//1
+std::ostream& Descatalog::write(std::ostream& ostr, Descatalog const& pr)
+{
+    ostr << size << location << name << virtual_adress << &access_user << &struct_catalog;
+    return ostr;
+}
+//3
+std::ostream& operator << (std::ostream& ostr, std::pair<std::string , Basic_description *> const& pr)
+{
+    ostr << pr.first.size()<< pr.first << sizeof(Basic_description) << pr.second;
+    return ostr;
+}
+//4
+std::ostream& operator << (std::ostream& ostr, const Basic_description * pr)
+{
+    ostr << pr->size << pr->location << pr->name << &pr->access_user;
+    return ostr;
+}
+//2//5
+std::ostream& operator << (std::ostream& ostr, std::pair<std::string , std::string> const& pr)
+{
+    ostr << pr.first.size() << pr.first << pr.second.size() << pr.second;
+    return ostr;
+}
+
+
+
+std::istream& Descatalog::read(std::istream& istr, Descatalog const& pr)
+{
+    std::vector<char> buf_int(sizeof(int));
+    istr.read(&buf_int[0], sizeof(int));
+    //преобразование к int
+    std::vector<char> buf_string(sizeof(string));
+    istr.read(&buf_string[0], sizeof(string));
+    //преоб
+    istr.read(&buf_string[0], sizeof(string));
+    
+    
+    
+    std::size_t sz;
+    istr >> pr.first >> sz;
+    if(!istr)
+        return istr;
+    std::vector<char> tmp(sz);// vector испульзуется из-за того, string не дает contiguous гарантии
+    istr.read(&tmp[0], sz);
+    pr.second.assign(tmp.begin(), tmp.end());
+    return istr;
+}
+
+std::istream& operator >>(std::istream& istr, std::pair<char, std::string>& pr)
+{
+    std::size_t sz;
+    istr >> pr.first >> sz;
+    if(!istr)
+        return istr;
+    std::vector<char> tmp(sz);// vector испульзуется из-за того, string не дает contiguous гарантии
+    istr.read(&tmp[0], sz);
+    pr.second.assign(tmp.begin(), tmp.end());
+    return istr;
+}
+
+//забей на DOS и просто записывай каталог в файл
+//для пользователй выдели больше места и не еби себе мозг
+
+
+
+
+
+
+
 
 
 

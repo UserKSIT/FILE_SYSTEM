@@ -21,6 +21,9 @@ extern Desstream main_s;
 extern Desstream temp;
 extern Desstream sym;
 
+extern int quantity_file;
+extern int quantity_catalog;
+
 using namespace std;
 
     //parent's absract class for classes "Descatalog" and "Desfile"
@@ -38,6 +41,8 @@ using namespace std;
     public:
         void set_location(const string &loc) {location = loc;}
         int & set_size(int &sz) {size = sz; return size;}
+        
+        Basic_description& operator = (const Basic_description &);
  
         bool insert_access(const string &, const string &);
         
@@ -46,6 +51,9 @@ using namespace std;
         const string & get_name() const {return name;}
         
         virtual Basic_description * clone() const = 0;
+        
+        friend std::ostream& operator << (std::ostream& ostr, std::pair<std::string , Basic_description *> const& pr);
+        friend std::ostream& operator << (std::ostream& ostr, const Basic_description * pr);
         
         virtual ~Basic_description(){};
     };
@@ -62,7 +70,7 @@ using namespace std;
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(const string &name):virtual_adress(sys.tellg()), parent(nullptr){location = current_location; this->insert_access(current_user, "rw"); size = sizeof(*this); this->name = name;}
+        Descatalog(const string &name): parent(nullptr){location = current_location; this->insert_access(current_user, "rw"); size = sizeof(*this); this->name = name; sys.seekg(std::ios::end); virtual_adress = sys.tellg(); sys.write((char *) this, size);}// to do
         
         //Descatalog(const string &, const string &, const string &, const string &);
         Descatalog(const Descatalog &);
@@ -83,7 +91,7 @@ using namespace std;
         
         bool replace(const string &, const Basic_description *);
         
-        Descatalog * next(const string &);
+        Basic_description *  next(const string &);
         Descatalog * back();
         //function add object - file or catalog
         Descatalog * add_object(const string &);
@@ -92,7 +100,7 @@ using namespace std;
         
         map <const string, Basic_description *>::const_iterator find(const string &) const;
         
-        //function open file
+        Descatalog & change_access(const string &);
         
         //function delete object - file or catalog
         
@@ -102,6 +110,9 @@ using namespace std;
         //Des search(const string &) const;
         
         friend std::ostream & operator << (std::ostream &flow, const Descatalog &object){return object.print(flow);}
+        
+        std::ostream& write(std::ostream& ostr, Descatalog const& pr);
+        std::istream& read(std::istream& istr, Descatalog const& pr);
     };
     //Description file
     class Desfile: public Basic_description{
@@ -118,13 +129,19 @@ using namespace std;
         virtual std::ostream & print(std::ostream &) const;
     public:
         Desfile(const string &name):master(current_user){ptr_stream = &main_s; shift_stream = main_s.open_stream_for_file(shift_stream); time_t t = time(0); timeinfo = localtime(&t);location = current_location; this->insert_access(current_user, "rw"); size = 0;this->name = name;};
+        //Desfile(const Desfile &);
         //Desfile(const string &, const string &, const string &, const string &);//to do
+        
+        Desfile& operator = (const Desfile &);
+        
         
         virtual Desfile * clone() const {
             return new Desfile(*this);
         }
         
         Desfile & open_stream();
+        
+       
         
         bool crypt_file();
         
