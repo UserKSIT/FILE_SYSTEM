@@ -377,6 +377,19 @@ map <const string, Basic_description *>::const_iterator Descatalog::find(const s
         }
     return p;
 }
+
+bool check_master(const string &name, Descatalog &object){
+    std::map<const string, Basic_description *>::const_iterator p = object.struct_catalog.find(name);
+    if (p != object.struct_catalog.end()){
+        Desfile * ptr = dynamic_cast<Desfile *>(p->second);
+        if (current_user == ptr->master)
+            return true;
+        else
+            return false;
+    }
+    else
+        return false;
+}
 //приравнивающий конструктор
 Desfile& Desfile::operator = (const Desfile &object)
 {

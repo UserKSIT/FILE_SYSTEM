@@ -72,11 +72,13 @@ const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
 
 int ChangeT(Descatalog *&object){
-    if (current_user != "ADMIN"){
-        std::cout << "You haven't root rule" << std::endl;
-        return 0;
-    }
-    string id, mode;
+    string id, mode, name;
+    std::cout << "Enter a name file: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a id was entered");
+    if (check_master(name, *object)){
+    
     std::cout << "Enter a id: --> ";
     std::cin >> id;
     if (!std::cin.good())
@@ -87,6 +89,10 @@ int ChangeT(Descatalog *&object){
         throw std::invalid_argument("Error when a id was entered");
     
     object->change_access(id, mode);
+    }
+    else{
+        std::cout << "You haven't master rule" << std::endl;
+    }
     
     return 0;
 }

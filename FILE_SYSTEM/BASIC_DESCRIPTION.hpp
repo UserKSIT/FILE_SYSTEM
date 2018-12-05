@@ -103,6 +103,7 @@ using namespace std;
         map <const string, Basic_description *>::const_iterator find(const string &) const;
         
         //function delete object - file or catalog
+        friend bool check_master(const string &, Descatalog &);
         
         Descatalog * delete_catalog(const string &);
         Descatalog * delete_file(const string &);
@@ -142,7 +143,7 @@ using namespace std;
         
         Desfile & open_stream();
         
-       
+        friend bool check_master(const string &, Descatalog &);
         
         bool crypt_file();
         
@@ -183,6 +184,8 @@ int Answer(const std::string *, int);
 const std::string Choice = "Make your choice",
 Msg = "You are wrong; repeate please";
 
+
+bool check_master(const string&);
 
 
 
