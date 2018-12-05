@@ -39,20 +39,7 @@ bool Desp_sys::insert_user(const string &id, const User object){
     bool res = false;
     map<const string, User>::iterator p = table_users.find(id);
     if (p == table_users.end()){
-        //std::ios::pos_type va = 0;
-        //int sz = table_users.size();
         table_users.insert(make_pair(id, object));
-        //map<const string, User>::const_iterator i = table_users.find(id);
-        /*
-        string tmp;
-        push_file(id, va, sz);
-        sz += sizeof(string);
-        tmp = get_name(i);
-        push_file(tmp, va, sz);
-        sz += sizeof(string);
-        tmp = get_info_key(i);
-        push_file(tmp, va, sz);
-        res = true;*/
     }
     return res;
 }
@@ -61,8 +48,6 @@ bool Desp_sys::remove(const std::string &id){
     bool res = false;
     std::map<const std::string, User>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
-        //delete iter->second;
-        //iter->second = nullptr;
         table_users.erase(iter);
         res = true;
     }
@@ -73,7 +58,6 @@ bool Desp_sys::change(const string &id, const User &object){
     bool res = false;
     std::map<const std::string, User>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
-        //object->info_key = table_users[id]->info_key;
         table_users.insert(make_pair(id, object));
         res = true;
     }

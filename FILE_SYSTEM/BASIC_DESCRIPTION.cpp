@@ -86,7 +86,6 @@ bool Descatalog::insert(const string &name, const Basic_description *object){
     std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p == struct_catalog.end()){
         std::pair<std::map<const string, Basic_description *>::iterator, bool> pp = struct_catalog.insert(std::make_pair(name, object->clone()));
-        //struct_catalog.insert(std::make_pair(name, object->clone()));
         if (!pp.second)
             throw std::out_of_range("can't insert new item into map");
         res = true;
@@ -132,12 +131,12 @@ bool Descatalog::replace(const string &name, const Basic_description *object)
 Descatalog * Descatalog::next(const string &name){// to do
     std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p != struct_catalog.end()){
-        if (check_access(name, "move")){
+        //if (check_access(name, "move")){
             Descatalog * ptr = dynamic_cast<Descatalog *>(p->second);
             current_location += name;
             current_location += "/";
         return ptr;
-        }
+        //}
     }
     return nullptr;
 }
@@ -186,7 +185,7 @@ Descatalog * Descatalog::add_object(const string &id){
             std::cout << "Duplicate name" << std::endl;
     }
     else
-        std::cout << "Wtf?" << std::endl;
+        std::cout << "W?" << std::endl;
     return this;
 }
 
@@ -274,10 +273,6 @@ std::ostream & Descatalog::print(std::ostream &flow) const{
 }
 
 std::ostream & Desfile::print(std::ostream &flow) const{
-    return ptr_stream->return_info(flow, shift_stream, size);
-}
-
-std::ostream & ProtectedDesfile::print(std::ostream &flow) const{
     return ptr_stream->return_info(flow, shift_stream, size);
 }
 
@@ -455,6 +450,22 @@ void  Basic_description::change_access(const string &id, const string &mode){
         return;
     }
 }
+
+std::ostream & Basic_description::print(std::ostream &flow) const{
+    map <const string, const string>::const_iterator p;
+    for (p = this->access_user.begin(); p != this->access_user.end(); p++){
+        flow << "Id: " << p->first << " Key access: " << p->second << std::endl;
+    }
+    return flow;
+}
+/*
+std::ostream & __print(std::ostream & flow, Basic_description *object){
+    map<const string, const string>::const_iterator p;
+    for (p = object->access_user.begin(), p != object->access_user.end(); ++p){
+        
+    }
+    return flow;
+}*/
 /*
 //1
 std::ostream& Descatalog::write(std::ostream& ostr, Descatalog const& pr)

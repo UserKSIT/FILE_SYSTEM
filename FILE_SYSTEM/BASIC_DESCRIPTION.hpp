@@ -37,7 +37,7 @@ using namespace std;
         string location;
         //name object
         string name;
-        virtual std::ostream & print(std::ostream &) const = 0;
+        virtual std::ostream & print(std::ostream &) const;//change to non-virtual
     public:
         void set_location(const string &loc) {location = loc;}
         int & set_size(int &sz) {size = sz; return size;}
@@ -55,7 +55,7 @@ using namespace std;
         virtual Basic_description * clone() const = 0;
         
         friend std::ostream& operator << (std::ostream& ostr, std::pair<std::string , Basic_description *> const& pr);
-        friend std::ostream& operator << (std::ostream& ostr, const Basic_description * pr);
+        friend std::ostream& operator << (std::ostream& flow, const Basic_description & object) {return object.print(flow);}
         
         virtual ~Basic_description(){};
     };
@@ -160,7 +160,7 @@ using namespace std;
 class ProtectedDesfile: public Desfile{
 private:
     map <const string, const string> table_users_access;
-    virtual std::ostream & print(std::ostream &) const;
+    //virtual std::ostream & print(std::ostream &) const;
 public:
     ProtectedDesfile(const string &name): Desfile(name){}
     

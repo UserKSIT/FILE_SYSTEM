@@ -37,6 +37,7 @@ int OpenF(Descatalog *&);
 int NextC(Descatalog *&);
 int BackC(Descatalog *&);
 int ChangeT(Descatalog *&);
+int ShowT(Descatalog *&);
 
 int Write(Desfile *);
 int Read(Desfile *);
@@ -48,14 +49,14 @@ int Get_status(Desp_sys &);
 char *Get_String(void);
 
 const std::string Menu_Catalog[] = { "1. Add a object", "2. Find a object",
-    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "8. Change table access", "0. End work" };
+    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "8. Change table access","9. Show table access", "0. End work" };
 const std::string Menu_File_1[] = { "1. Show info", "0. Close file"};
 const std::string Menu_File_2[] = {"1. Write info", "0. Close file"};
 const std::string Menu_File_3[] = {"1. Write info", "2. Read info", "0. Close file"};
 
 const std::string Menu_start[] = {"1. Start work", "2. Change table users", "3. Show statistic", "0. Quit programm"};
 
-int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT};
+int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT, ShowT};
 
 int(*Funcs_file1[])(Desfile *) = {nullptr, Read};
 int(*Funcs_file2[])(Desfile *) = {nullptr, Write};
@@ -70,6 +71,12 @@ const int NumCatalog = sizeof(Menu_Catalog)/sizeof(Menu_Catalog[0]);
 const int NumFile1 = sizeof(Funcs_file1)/sizeof(Funcs_file1[0]);
 const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
+
+int ShowT(Descatalog *&view){
+    Basic_description * ptr = view;
+    std::cout << *ptr << std::endl;
+    return 0;
+}
 
 int ChangeT(Descatalog *&object){
     string id, mode, name;
