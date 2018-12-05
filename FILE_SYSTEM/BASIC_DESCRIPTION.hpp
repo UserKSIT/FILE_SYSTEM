@@ -48,7 +48,9 @@ using namespace std;
         
         bool check_access(const string &, const string &);
         
-        const string & get_name() const {return name;}
+        void change_access(const string &, const string &);
+        
+        const string get_name() const {return name;}
         
         virtual Basic_description * clone() const = 0;
         
@@ -70,7 +72,7 @@ using namespace std;
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(const string &name): parent(nullptr){location = current_location; this->insert_access(current_user, "rw"); size = sizeof(*this); this->name = name; sys.seekg(std::ios::end); virtual_adress = sys.tellg(); sys.write((char *) this, size);}// to do
+        Descatalog(const string &name): parent(nullptr){location = current_location; this->insert_access(current_user, "move"); size = sizeof(*this); this->name = name; sys.seekg(std::ios::end); virtual_adress = sys.tellg(); sys.write((char *) this, size);}// to do
         
         //Descatalog(const string &, const string &, const string &, const string &);
         Descatalog(const Descatalog &);
@@ -91,7 +93,7 @@ using namespace std;
         
         bool replace(const string &, const Basic_description *);
         
-        Basic_description *  next(const string &);
+        Descatalog * next(const string &);
         Descatalog * back();
         //function add object - file or catalog
         Descatalog * add_object(const string &);
@@ -99,8 +101,6 @@ using namespace std;
         Basic_description * open_file(const string &, int &);
         
         map <const string, Basic_description *>::const_iterator find(const string &) const;
-        
-        Descatalog & change_access(const string &);
         
         //function delete object - file or catalog
         
@@ -128,9 +128,10 @@ using namespace std;
         //print info file
         virtual std::ostream & print(std::ostream &) const;
     public:
-        Desfile(const string &name):master(current_user){ptr_stream = &main_s; shift_stream = main_s.open_stream_for_file(shift_stream); time_t t = time(0); timeinfo = localtime(&t);location = current_location; this->insert_access(current_user, "rw"); size = 0;this->name = name;};
-        //Desfile(const Desfile &);
-        //Desfile(const string &, const string &, const string &, const string &);//to do
+        Desfile(const string &name):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t);location = current_location; this->insert_access(current_user, "rw"); size = 0;this->name = name;};
+        
+        Desfile(const Desfile &);
+       
         
         Desfile& operator = (const Desfile &);
         

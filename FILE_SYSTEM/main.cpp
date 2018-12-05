@@ -29,13 +29,14 @@ int quantity_catalog;
 
 int Answer(const std::string alt[], int n);
 
-int Add(Descatalog *);
-int Find(Descatalog*);
-int Remove(Descatalog *);
-int ShowAll(Descatalog *);
-int OpenF(Descatalog *);
-int NextC(Descatalog *);
-int BackC(Descatalog *);
+int Add(Descatalog *&);
+int Find(Descatalog *&);
+int Remove(Descatalog *&);
+int ShowAll(Descatalog *&);
+int OpenF(Descatalog *&);
+int NextC(Descatalog *&);
+int BackC(Descatalog *&);
+int ChangeT(Descatalog *&);
 
 int Write(Desfile *);
 int Read(Desfile *);
@@ -47,14 +48,14 @@ int Get_status(Desp_sys &);
 char *Get_String(void);
 
 const std::string Menu_Catalog[] = { "1. Add a object", "2. Find a object",
-    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog/don't work", "7. Back/don't work", "0. End work" };
+    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "8. Change table access", "0. End work" };
 const std::string Menu_File_1[] = { "1. Show info", "0. Close file"};
 const std::string Menu_File_2[] = {"1. Write info", "0. Close file"};
 const std::string Menu_File_3[] = {"1. Write info", "2. Read info", "0. Close file"};
 
 const std::string Menu_start[] = {"1. Start work", "2. Change table users", "3. Show statistic", "0. Quit programm"};
 
-int(*Funcs[])(Descatalog *) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC};
+int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT};
 
 int(*Funcs_file1[])(Desfile *) = {nullptr, Read};
 int(*Funcs_file2[])(Desfile *) = {nullptr, Write};
@@ -69,6 +70,27 @@ const int NumCatalog = sizeof(Menu_Catalog)/sizeof(Menu_Catalog[0]);
 const int NumFile1 = sizeof(Funcs_file1)/sizeof(Funcs_file1[0]);
 const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
+
+int ChangeT(Descatalog *&object){
+    if (current_user != "ADMIN"){
+        std::cout << "You haven't root rule" << std::endl;
+        return 0;
+    }
+    string id, mode;
+    std::cout << "Enter a id: --> ";
+    std::cin >> id;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a id was entered");
+    std::cout << "Enter a mode: --> ";
+    std::cin >> mode;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a id was entered");
+    
+    object->change_access(id, mode);
+    
+    return 0;
+}
+
 
 int Get_status(Desp_sys &object){
     std::cout << "Quantity file: " << quantity_file << std::endl;
@@ -175,7 +197,7 @@ int Read(Desfile *object){
     return 0;
 }
 
-int Add(Descatalog *view)
+int Add(Descatalog *&view)
 {
     string id;
     std::cout << "Enter name object" << std::endl;
@@ -186,7 +208,7 @@ int Add(Descatalog *view)
     
     return 0;
 }
-int Find(Descatalog *view)
+int Find(Descatalog *&view)
 {
     std::string name;
     std::cout << "Enter a object name: --> ";
@@ -197,7 +219,7 @@ int Find(Descatalog *view)
     
     return 0;
 }
-int Remove(Descatalog*view)
+int Remove(Descatalog *&view)
 {
     std::string name;
     std::cout << "Enter a object name: --> ";
@@ -211,34 +233,30 @@ int Remove(Descatalog*view)
         << std::endl;
     return 0;
 }
-int ShowAll(Descatalog *view){
-    std::cout << *view;
+int ShowAll(Descatalog *&view){
+    std::cout << *view << std::endl;
     return 0;
 }
 
-int NextC(Descatalog *view){//не работает
+int NextC(Descatalog *&view){
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
-    Basic_description * ptr = view->next(name);
-    Descatalog * next = dynamic_cast<Descatalog *>(ptr);
-    current_location += next->get_name();
-    current_location += "/";
+    Descatalog * next = view->next(name);
+    
     if (next != nullptr){
         std::cout << "Ok" << std::endl;
-        next->set_parent(view);
         view = next;
     }
     else
-        std::cout << "The object with Name \"" << name << "\" is absent in container"
-        << std::endl;
+        std::cout << "The object with Name \"" << name << "\" is absent in container" << std::endl;
     
     return 0;
 }
 
-int OpenF(Descatalog *view){
+int OpenF(Descatalog *&view){
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
@@ -279,10 +297,12 @@ int OpenF(Descatalog *view){
     return 0;
 }
 
-int BackC(Descatalog *view){
-    view = view->back();
-    if(view != nullptr)
+int BackC(Descatalog *& view){
+    Descatalog * parent = view->back();
+    if(parent != nullptr){
+        view = parent;
         std::cout << "Ok" << std::endl;
+    }
     else
         std::cout << "This is a root" << std::endl;
     return 0;
@@ -304,7 +324,6 @@ int main(int argc, char * argv[]) {
     
     //::testing::InitGoogleTest(&argc, argv);
     //return RUN_ALL_TESTS();
-    
     Desp_sys SYSTEM;
  
     int ind;
@@ -331,12 +350,13 @@ TEST(StreamFunction, PushInfo){
 
     getline(cin, info);
 
-    for (int i = 0; i < 1000; i++){
+    for (int i = 0; i < 10; i++){
         object.write_file(info);
     }
     
     std::cout << "Look -> ";
     std::cout << object << std::endl;
 }
+
 
 

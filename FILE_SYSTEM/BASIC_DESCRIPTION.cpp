@@ -16,8 +16,17 @@
 //добавить проверку прав доступа
 using namespace std;
 
-//дополняющий конструктор
+//копирующий конструктор для клона
 Descatalog::Descatalog(const Descatalog &object){
+    size = object.size;
+    location = object.location;
+    name = object.name;
+    virtual_adress = object.virtual_adress;
+    parent = object.parent;
+    
+    std::map<const string, const string>::const_iterator i;
+    for (i = object.access_user.begin(); i != object.access_user.end(); ++i)
+        access_user.insert(std::make_pair(i->first, i->second));
     
     std::map<const string, Basic_description *>::const_iterator p;
     for (p = object.struct_catalog.begin(); p != object.struct_catalog.end(); ++p)
@@ -76,8 +85,8 @@ bool Descatalog::insert(const string &name, const Basic_description *object){
     bool res = false;
     std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p == struct_catalog.end()){
-        std::pair<std::map<const string, Basic_description *>::iterator, bool> pp =
-        struct_catalog.insert(std::make_pair(name, object->clone()));
+        std::pair<std::map<const string, Basic_description *>::iterator, bool> pp = struct_catalog.insert(std::make_pair(name, object->clone()));
+        //struct_catalog.insert(std::make_pair(name, object->clone()));
         if (!pp.second)
             throw std::out_of_range("can't insert new item into map");
         res = true;
@@ -120,26 +129,26 @@ bool Descatalog::replace(const string &name, const Basic_description *object)
     return res;
 }
 
-Basic_description * Descatalog::next(const string &name){// to do
-    
+Descatalog * Descatalog::next(const string &name){// to do
     std::map<const string, Basic_description *>::iterator p = struct_catalog.find(name);
     if (p != struct_catalog.end()){
-        //динамическое приведение типа
-        //Descatalog * ptr = dynamic_cast<Descatalog *>(p->second);
-        //if (ptr){
-            //current_location = current_location + ptr->get_name();
-            return p->second;
+        if (check_access(name, "move")){
+            Descatalog * ptr = dynamic_cast<Descatalog *>(p->second);
+            current_location += name;
+            current_location += "/";
+        return ptr;
         }
-        else
-            return nullptr;
+    }
+    return nullptr;
 }
 
 Descatalog * Descatalog::back(){
     if (parent != nullptr){
         int sz1 = name.size();
         int sz2 = current_location.size();
+        int delta = sz2 - sz1 - 1;
         
-        current_location = current_location.substr(0, sz2 - sz1);
+        current_location = current_location.substr(0, delta);
         return parent;
     }
     else
@@ -358,6 +367,7 @@ bool Basic_description::check_access(const string &id, const string &mode){
             return res;
     return res;
 }
+
 map <const string, Basic_description *>::const_iterator Descatalog::find(const string &name) const {
     std::map<const string, Basic_description *>::const_iterator p = struct_catalog.find(name);
     if(p == struct_catalog.end())
@@ -367,7 +377,7 @@ map <const string, Basic_description *>::const_iterator Descatalog::find(const s
         }
     return p;
 }
-//копирующий конструктор
+//приравнивающий конструктор
 Desfile& Desfile::operator = (const Desfile &object)
 {
     if(this != &object){
@@ -397,11 +407,42 @@ Desfile& Desfile::operator = (const Desfile &object)
     }
     return *this;
 }
-
-/*Descatalog & change_access(const string &){
+//копирующий конструктор для клона
+Desfile::Desfile(const Desfile &object){
+    size = object.size;
+    location = object.location;
+    name = object.name;
     
-}*/
+    timeinfo = object.timeinfo;
+    master = object.master;
+    ptr_stream = object.ptr_stream;
+    
+    std::map<const string, const string>::const_iterator pp;
+    for (pp = object.access_user.begin(); pp != object.access_user.end(); ++pp)
+        access_user.insert(std::make_pair(pp->first, pp->second));
+    
+    shift_stream = ptr_stream->open_stream_for_file(shift_stream);
+}
 
+void  Basic_description::change_access(const string &id, const string &mode){
+    std::map<const string, const string>::iterator pp = access_user.find(id);
+    if (pp != access_user.end()){
+        if (pp->first != "ADMIN"){
+            access_user.erase(pp);
+            access_user.insert(std::make_pair(id, mode));
+            return;
+        }
+        else{
+            std::cout << "This is ADMIN" << std::endl;
+            return;
+        }
+    }
+    else{
+        access_user.insert(std::make_pair(id, mode));
+        return;
+    }
+}
+/*
 //1
 std::ostream& Descatalog::write(std::ostream& ostr, Descatalog const& pr)
 {
@@ -462,7 +503,7 @@ std::istream& operator >>(std::istream& istr, std::pair<char, std::string>& pr)
     pr.second.assign(tmp.begin(), tmp.end());
     return istr;
 }
-
+*/
 //забей на DOS и просто записывай каталог в файл
 //для пользователй выдели больше места и не еби себе мозг
 
