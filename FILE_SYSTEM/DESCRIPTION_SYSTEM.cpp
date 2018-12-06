@@ -7,12 +7,6 @@
 //
 
 #include "DESCRIPTION_SYSTEM.hpp"
-#include "BASIC_DESCRIPTION.hpp"
-#include "USER.hpp"
-#include "Library_Template.hpp"
-#include <string>
-#include <vector>
-#include <iostream>
 
 using namespace std;
 

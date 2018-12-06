@@ -7,8 +7,7 @@
 //
 
 #include "USER.hpp"
-#include <string>
-#include <iostream>
+
 using namespace std;
 
 std::istream & operator >> (std::istream &flow, User &object){

@@ -10,9 +10,13 @@
 #define BASIC_DESCRIPTION_hpp
 
 #include "STREAM.hpp"
+#include "USER.hpp"
 #include <ctime>
 #include <map>
 #include <vector>
+#include <string>
+#include <iostream>
+
 extern string current_user;
 extern string current_location;
 extern std::fstream sys;

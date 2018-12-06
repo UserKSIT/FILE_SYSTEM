@@ -11,8 +11,11 @@
 
 #include "USER.hpp"
 #include "BASIC_DESCRIPTION.hpp"
+#include "Library_Template.hpp"
 #include <map>
 #include <string>
+#include <vector>
+#include <iostream>
 
 extern string current_user;
 extern string current_location;
