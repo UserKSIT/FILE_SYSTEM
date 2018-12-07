@@ -12,7 +12,7 @@ using namespace std;
 
 Desp_sys::Desp_sys(const string & word){
         if(word == "Yes"){
-            root = new Descatalog("root");
+            root = new Descatalog;
             current_user = "";
             current_location = "root/";
             quantity_file = 0;

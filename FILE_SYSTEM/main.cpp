@@ -79,7 +79,7 @@ int ShowT(Descatalog *&view){
 }
 
 int ChangeT(Descatalog *&object){
-    string id, mode, name;
+    /*string id, mode, name;
     std::cout << "Enter a name file: --> ";
     std::cin >> name;
     if (!std::cin.good())
@@ -99,7 +99,7 @@ int ChangeT(Descatalog *&object){
     }
     else{
         std::cout << "You haven't master rule" << std::endl;
-    }
+    }*/
     
     return 0;
 }
@@ -228,7 +228,9 @@ int Find(Descatalog *&view)
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a shape name was entered");
-    view->find(name);
+    ID buf;
+    buf.name = name;
+    view->find(buf);
     
     return 0;
 }
@@ -239,7 +241,9 @@ int Remove(Descatalog *&view)
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
-    if (view->remove(name))
+    ID buf;
+    buf.name = name;
+    if (view->remove(buf))
         std::cout << "Ok" << std::endl;
     else
         std::cout << "The object with Name \"" << name << "\" is absent in container"
@@ -257,7 +261,9 @@ int NextC(Descatalog *&view){
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
-    Descatalog * next = view->next(name);
+    ID buf;
+    buf.name = name;
+    Descatalog * next = view->next(buf);
     
     if (next != nullptr){
         std::cout << "Ok" << std::endl;
@@ -276,7 +282,9 @@ int OpenF(Descatalog *&view){
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
     int res;
-    Basic_description * Bptr = view->open_file(name, res);
+    ID buf;
+    buf.name = name;
+    Basic_description * Bptr = view->open_file(buf, res);
     int ind;
     if (res > 0){
         Desfile * ptr = dynamic_cast<Desfile *>(Bptr);
@@ -332,7 +340,7 @@ int main(int argc, char * argv[]) {
     }
     
 
-    string ret, n, g;
+/*    string ret, n, g;
     //getline(sys, ret);
     sys.seekp(std::ios::end);
     sys << "zbs nigga\npizdec nahui blyat\n";
@@ -347,7 +355,7 @@ int main(int argc, char * argv[]) {
     getline(sys, g, '\n');
     std::cout << g << std::endl;
     sys.close();
-    return 0;
+    return 0;*/
     
     main_s.init_stream("MAIN");
     temp.init_stream("TEMP");
@@ -374,7 +382,7 @@ int main(int argc, char * argv[]) {
 }
 
 TEST(StreamFunction, PushInfo){
-    Desfile object("Nigga");
+    Desfile object;
     istringstream flow;
     string info;
     std::cout << "Input info" << std::endl;

@@ -30,15 +30,23 @@ extern int quantity_catalog;
 
 using namespace std;
 struct ID{
-    const string name;
+    string name;
     string location;
     std::ios::pos_type virtual_adress;
     
-    ID(const string name = "", const string &location = "", std::ios::pos_type virtual_adress = 0):name(name), location(location), virtual_adress(virtual_adress){}
+    ID(const string name = ""):name(name){ location = current_location; sys.seekg(std::ios::end);virtual_adress = sys.tellg();}
     
-    bool operator<(const ID object) const
+    const string get_name() const {return name;}
+     void set_location(const string &loc) {location = loc;}
+    
+    bool operator < (const ID object) const
     {
         return name < object.name;
+    }
+    
+    bool operator == (const ID object) const
+    {
+        return name == object.name;
     }
 };
 
@@ -50,12 +58,9 @@ struct ID{
         //table access to object. Containing id user and level privileges
         map<const string, const string> access_user;
         //way to object
-        string location;
-        //name object
-        string name;
         virtual std::ostream & print(std::ostream &) const = 0;
     public:
-        void set_location(const string &loc) {location = loc;}
+       
         int & set_size(int &sz) {size = sz; return size;}
         
         Basic_description& operator = (const Basic_description &);
@@ -63,9 +68,6 @@ struct ID{
         bool insert_access(const string &, const string &);
         bool check_access(const string &, const string &);
         void change_access(const string &, const string &);
-        
-        
-        const string get_name() const {return name;}
         
         
         virtual Basic_description * clone() const = 0;
@@ -84,15 +86,14 @@ struct ID{
     class Descatalog: public Basic_description{
     private:
         //adress shift on disk(file)
-        
         //table containing file and subdirectory
-        map <const string, Basic_description *> struct_catalog;
+        map <ID, Basic_description *> struct_catalog;
         //print info table
         virtual std::ostream & print(std::ostream &) const;
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(const string &name): parent(nullptr){location = current_location; this->insert_access(current_user, "move"); size = sizeof(*this); this->name = name; sys.seekg(std::ios::end); virtual_adress = sys.tellg();}// to do
+        Descatalog(): parent(nullptr){this->insert_access(current_user, "move"); size = sizeof(*this);}// to do
         
         //Descatalog(const string &, const string &, const string &, const string &);
         Descatalog(const Descatalog &);
@@ -107,26 +108,25 @@ struct ID{
         
         Descatalog& operator = (const Descatalog &);
         
-        bool insert(const string &, const Basic_description *);
+        bool insert(ID &, const Basic_description *);
         
-        bool remove(const string &);
+        bool remove(ID &);
         
-        bool replace(const string &, const Basic_description *);
+        bool replace(ID &, const Basic_description *);
         
-        Descatalog * next(const string &);
+        Descatalog * next(ID &);
         Descatalog * back();
         //function add object - file or catalog
         Descatalog * add_object(const string &);
         
-        Basic_description * open_file(const string &, int &);
+        Basic_description * open_file(ID &, int &);
         
-        map <const string, Basic_description *>::const_iterator find(const string &) const;
+        map <ID, Basic_description *>::const_iterator find(ID &) const;
         
         //function delete object - file or catalog
-        friend bool check_master(const string &, Descatalog &);
         
-        Descatalog * delete_catalog(const string &);
-        Descatalog * delete_file(const string &);
+        Descatalog * delete_catalog(ID &);
+        Descatalog * delete_file(ID &);
         
         virtual std::ostream & write(std::ostream&);
         virtual std::istream & read(std::istream&);
@@ -155,7 +155,7 @@ struct ID{
         //print info file
         virtual std::ostream & print(std::ostream &) const;
     public:
-        Desfile(const string &name):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t);location = current_location; this->insert_access(current_user, "rw"); size = 0;this->name = name;};
+        Desfile():master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); this->insert_access(current_user, "rw"); size = 0;};
         
         Desfile(const Desfile &);
        
@@ -168,8 +168,7 @@ struct ID{
         }
         
         Desfile & open_stream();
-        
-        friend bool check_master(const string &, Descatalog &);
+
         
         bool crypt_file();
         
@@ -195,7 +194,7 @@ private:
     map <const string, const string> table_users_access;
     //virtual std::ostream & print(std::ostream &) const;
 public:
-    ProtectedDesfile(const string &name): Desfile(name){}
+    ProtectedDesfile(): Desfile(){}
     
     virtual ProtectedDesfile * clone() const {
         return new ProtectedDesfile(*this);
