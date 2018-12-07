@@ -73,8 +73,8 @@ const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
 
 int ShowT(Descatalog *&view){
-    Basic_description * ptr = view;
-    std::cout << *ptr << std::endl;
+    //Basic_description * ptr = view;
+    //std::cout << *ptr << std::endl;
     return 0;
 }
 
@@ -322,7 +322,7 @@ int BackC(Descatalog *& view){
 }
 
 int main(int argc, char * argv[]) {
-    sys.open("/Programms C++/FILE_SYSTEM/FILE_SYSTEM/FILE_SYSTEM.bin", std::ios::in | std::ios::out | std::ios::binary);
+    sys.open("/Programms C++/FILE_SYSTEM/FILE_SYSTEM/FILE_SYSTEM.txt");
     sys.clear();
     if (sys.is_open())
         std::cout << "File is open\n";
@@ -331,13 +331,31 @@ int main(int argc, char * argv[]) {
         return 0;
     }
     
+
+    string ret, n, g;
+    //getline(sys, ret);
+    sys.seekp(std::ios::end);
+    sys << "zbs nigga\npizdec nahui blyat\n";
+    sys.seekg(std::ios::beg);
+    sys >> ret;
+    std::cout << ret << std::endl;
+    sys >> n;
+    std::cout << n << std::endl;
+    ret = ret + " " + n;
+    std::cout << ret << std::endl;
+    sys.seekg(12);
+    getline(sys, g, '\n');
+    std::cout << g << std::endl;
+    sys.close();
+    return 0;
+    
     main_s.init_stream("MAIN");
     temp.init_stream("TEMP");
     sym.init_stream("SYMKEY");
     
     //::testing::InitGoogleTest(&argc, argv);
     //return RUN_ALL_TESTS();
-    Desp_sys SYSTEM;
+    Desp_sys SYSTEM("Yes");
  
     int ind;
     try{

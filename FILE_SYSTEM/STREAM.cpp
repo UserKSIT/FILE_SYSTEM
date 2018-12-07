@@ -97,6 +97,8 @@ std::ostream & Desstream::return_info(std::ostream &flow, const std::ios::pos_ty
     for(int i = 0; i < quant; i++){
         sys.read(buf, block);
         
+        
+        
         for (int i = 0; i < block; i++)
             flow << buf[i];
         flow << std::endl;

@@ -32,7 +32,7 @@ private:
     const string & get_name (map<const string, User>::const_iterator &i) const ;
     const string & get_info_key(map<const string, User>::const_iterator &i) const;
 public:
-    Desp_sys();
+    Desp_sys(const string & word = "No");
     //return pointer root
     Descatalog * get_root() const {return root;}
     //retrun pointer table of users

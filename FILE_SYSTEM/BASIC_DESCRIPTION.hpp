@@ -29,6 +29,18 @@ extern int quantity_file;
 extern int quantity_catalog;
 
 using namespace std;
+struct ID{
+    const string name;
+    string location;
+    std::ios::pos_type virtual_adress;
+    
+    ID(const string name = "", const string &location = "", std::ios::pos_type virtual_adress = 0):name(name), location(location), virtual_adress(virtual_adress){}
+    
+    bool operator<(const ID object) const
+    {
+        return name < object.name;
+    }
+};
 
     //parent's absract class for classes "Descatalog" and "Desfile"
     class Basic_description{
@@ -41,7 +53,7 @@ using namespace std;
         string location;
         //name object
         string name;
-        virtual std::ostream & print(std::ostream &) const;//change to non-virtual
+        virtual std::ostream & print(std::ostream &) const = 0;
     public:
         void set_location(const string &loc) {location = loc;}
         int & set_size(int &sz) {size = sz; return size;}
@@ -49,17 +61,21 @@ using namespace std;
         Basic_description& operator = (const Basic_description &);
  
         bool insert_access(const string &, const string &);
-        
         bool check_access(const string &, const string &);
-        
         void change_access(const string &, const string &);
+        
         
         const string get_name() const {return name;}
         
+        
         virtual Basic_description * clone() const = 0;
         
-        friend std::ostream& operator << (std::ostream& ostr, std::pair<std::string , Basic_description *> const& pr);
-        friend std::ostream& operator << (std::ostream& flow, const Basic_description & object) {return object.print(flow);}
+        
+        virtual std::ostream & write(std::ostream&) = 0;
+        virtual std::istream & read(std::istream&) = 0;
+    
+        friend std::istream& operator >> (std::istream&, map<const string, const string> &);
+        friend std::ostream& operator << (std::ostream&, map<const string, const string> &);
         
         virtual ~Basic_description(){};
     };
@@ -68,7 +84,7 @@ using namespace std;
     class Descatalog: public Basic_description{
     private:
         //adress shift on disk(file)
-        std::ios::pos_type virtual_adress;
+        
         //table containing file and subdirectory
         map <const string, Basic_description *> struct_catalog;
         //print info table
@@ -76,7 +92,7 @@ using namespace std;
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(const string &name): parent(nullptr){location = current_location; this->insert_access(current_user, "move"); size = sizeof(*this); this->name = name; sys.seekg(std::ios::end); virtual_adress = sys.tellg(); sys.write((char *) this, size);}// to do
+        Descatalog(const string &name): parent(nullptr){location = current_location; this->insert_access(current_user, "move"); size = sizeof(*this); this->name = name; sys.seekg(std::ios::end); virtual_adress = sys.tellg();}// to do
         
         //Descatalog(const string &, const string &, const string &, const string &);
         Descatalog(const Descatalog &);
@@ -111,13 +127,19 @@ using namespace std;
         
         Descatalog * delete_catalog(const string &);
         Descatalog * delete_file(const string &);
+        
+        virtual std::ostream & write(std::ostream&);
+        virtual std::istream & read(std::istream&);
+        
+        
+        friend std::istream& operator >> (std::istream&, Descatalog &);
 
         //Des search(const string &) const;
         
         friend std::ostream & operator << (std::ostream &flow, const Descatalog &object){return object.print(flow);}
         
-        std::ostream& write(std::ostream& ostr, Descatalog const& pr);
-        std::istream& read(std::istream& istr, Descatalog const& pr);
+        //std::ostream& write(std::ostream& ostr, Descatalog const& pr);
+        //std::istream& read(std::istream& istr, Descatalog const& pr);
     };
     //Description file
     class Desfile: public Basic_description{
@@ -153,11 +175,18 @@ using namespace std;
         
         Desstream * get_stream() const {return ptr_stream;}
         
+        virtual std::ostream & write(std::ostream&);
+        virtual std::istream & read(std::istream&);
+        
+        friend std::istream & operator << (std::istream &, tm * );
+        friend std::ostream & operator << (std::ostream &, tm * );
+        
         //-----------------------------------------------------
         int open();
         bool close_file() const;
         void write_file(const string &);
         friend std::ostream & operator << (std::ostream &flow, Desfile &object){return object.print(flow);}
+        friend std::ostream & operator << (std::ostream &, tm *);
         //----------------------------------------------------
     };
 
@@ -175,8 +204,29 @@ public:
     bool insert_user(const string &, const string &);
     bool remove_user(const string &);
     
+    virtual std::ostream & write(std::ostream&);
+    virtual std::istream & read(std::istream&);
+    
     friend std::ostream & operator << (std::ostream &flow, ProtectedDesfile &object){return object.print(flow);}
 };
+
+
+
+
+
+
+std::istream& read_access_user(std::istream&, map<const string, const string> &);
+std::istream& read_struct_catalog(std::istream&, map<const string, Basic_description *> &);
+
+
+
+
+
+
+
+
+
+
 
 const std::string Sh[] = {"1. Catalog", "2. File", "0. Quit"};
 const std::string Mode[] = {"1. Read", "2. Write", "3. Read and write", "0. Quit"};

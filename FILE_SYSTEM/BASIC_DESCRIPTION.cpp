@@ -424,7 +424,8 @@ Desfile::Desfile(const Desfile &object){
     for (pp = object.access_user.begin(); pp != object.access_user.end(); ++pp)
         access_user.insert(std::make_pair(pp->first, pp->second));
     
-    shift_stream = ptr_stream->open_stream_for_file(shift_stream);
+    if (shift_stream == 0)
+        shift_stream = ptr_stream->open_stream_for_file(shift_stream);
 }
 
 void  Basic_description::change_access(const string &id, const string &mode){
@@ -446,100 +447,144 @@ void  Basic_description::change_access(const string &id, const string &mode){
     }
 }
 
-std::ostream & Basic_description::print(std::ostream &flow) const{
-    map <const string, const string>::const_iterator p;
-    for (p = this->access_user.begin(); p != this->access_user.end(); p++){
-        flow << "Id: " << p->first << " Key access: " << p->second << std::endl;
-    }
+
+//write file
+std::ostream& Descatalog::write(std::ostream& ostr)
+{
+    ostr << "Catalog" << ' ' << virtual_adress << ' ' << size << ' ' << location << ' ' << name << ' ' << &access_user << &struct_catalog << '\n';
+    
+    return ostr;
+}
+//read catalog
+std::istream& Descatalog::read(std::istream& istr)
+{
+    long int buf;
+    istr >> buf >> size >> location >> name;
+    virtual_adress = buf;
+    read_access_user(istr, access_user);
+    read_struct_catalog(istr, struct_catalog);
+    return istr;
+}
+//write file
+std::ostream& Desfile::write(std::ostream& ostr){
+    
+    ostr << "File" << timeinfo << ' ' << location << ' ' << shift_stream << '\n';
+    
+    return ostr;
+}
+//write protected file
+std::ostream& ProtectedDesfile::write(std::ostream& ostr){
+    ostr << "Protected_File" << timeinfo << ' ' << location << ' ' << shift_stream << &table_users_access << '\n';
+    
+    return ostr;
+}
+//write time info
+std::ostream & operator << (std::ostream & flow, tm * object){
+    flow << object->tm_sec << ' ' << object->tm_min << ' ' << object->tm_hour << ' ' << object->tm_mday << ' ';
+    flow << object->tm_mon << ' ' << object->tm_year <<  ' ' << object->tm_wday << ' ' << object->tm_yday << ' ';
+    flow << object->tm_isdst << ' ';
+    
     return flow;
 }
-/*
-std::ostream & __print(std::ostream & flow, Basic_description *object){
-    map<const string, const string>::const_iterator p;
-    for (p = object->access_user.begin(), p != object->access_user.end(); ++p){
+//read time info
+std::istream & operator << (std::istream & flow, tm * object){
+    flow >> object->tm_sec >> object->tm_min >> object->tm_hour >>object->tm_mday;
+    flow >> object->tm_mon >> object->tm_year >> object->tm_wday >> object->tm_yday;
+    flow >> object->tm_isdst;
+    
+    return flow;
+}
+//write map <string, string>
+std::ostream& operator << (std::ostream& ostr, map<const string, const string> &table)
+{
+    size_t sz = table.size();
+    
+    ostr << sz << ' ';
+    
+    map<const string, const string>::const_iterator i;
+    
+    for(i = table.begin(); i != table.end(); i++){
+        ostr << i->first << ' ';
+        ostr << i->second << ' ';
+    }
+    return ostr;
+}
+//read map <string, string>
+std::istream& read_access_user(std::istream& istr, map<const string, const string> &table)
+{
+    size_t sz;
+    string first, second;
+    
+    istr >> sz;
+    
+    for(int i = 0; i != sz; i++){
+        istr >> first;
+        istr >> second;
         
+        table.insert(std::make_pair(first, second));
     }
-    return flow;
-}*/
-/*
-//1
-std::ostream& Descatalog::write(std::ostream& ostr, Descatalog const& pr)
-{
-    ostr << size << location << name << virtual_adress << &access_user << &struct_catalog;
-    return ostr;
-}
-//3
-std::ostream& operator << (std::ostream& ostr, std::pair<std::string , Basic_description *> const& pr)
-{
-    ostr << pr.first.size()<< pr.first << sizeof(Basic_description) << pr.second;
-    return ostr;
-}
-//4
-std::ostream& operator << (std::ostream& ostr, const Basic_description * pr)
-{
-    ostr << pr->size << pr->location << pr->name << &pr->access_user;
-    return ostr;
-}
-//2//5
-std::ostream& operator << (std::ostream& ostr, std::pair<std::string , std::string> const& pr)
-{
-    ostr << pr.first.size() << pr.first << pr.second.size() << pr.second;
-    return ostr;
-}
-
-
-
-std::istream& Descatalog::read(std::istream& istr, Descatalog const& pr)
-{
-    std::vector<char> buf_int(sizeof(int));
-    istr.read(&buf_int[0], sizeof(int));
-    //преобразование к int
-    std::vector<char> buf_string(sizeof(string));
-    istr.read(&buf_string[0], sizeof(string));
-    //преоб
-    istr.read(&buf_string[0], sizeof(string));
-    
-    
-    
-    std::size_t sz;
-    istr >> pr.first >> sz;
-    if(!istr)
-        return istr;
-    std::vector<char> tmp(sz);// vector испульзуется из-за того, string не дает contiguous гарантии
-    istr.read(&tmp[0], sz);
-    pr.second.assign(tmp.begin(), tmp.end());
     return istr;
 }
-
-std::istream& operator >>(std::istream& istr, std::pair<char, std::string>& pr)
+//write map struct catalog
+std::ostream& operator << (std::ostream& ostr, map<const string, Basic_description *> &table)
 {
-    std::size_t sz;
-    istr >> pr.first >> sz;
-    if(!istr)
-        return istr;
-    std::vector<char> tmp(sz);// vector испульзуется из-за того, string не дает contiguous гарантии
-    istr.read(&tmp[0], sz);
-    pr.second.assign(tmp.begin(), tmp.end());
+    if(!table.empty()){
+        size_t sz = table.size();
+        
+        ostr << sz << ' ';
+        
+        map<const string, Basic_description *>::const_iterator i;
+        
+        for(i = table.begin(); i != table.end(); i++){
+            ostr << i->first << ' ';
+            
+            i->second->write(ostr);
+        }
+    }
+    return ostr;
+}
+//read map struct catalog
+std::istream& read_struct_catalog(std::istream& istr, map<const string, Basic_description *> &table)//?
+//add check sucsess insert
+{
+    size_t sz;
+    string id, buf;
+    istr >> sz;
+    Basic_description * ptr;
+    Descatalog catalog("");
+    Desfile file("");
+    ProtectedDesfile pfile("");
+
+    
+    for(int i = 0; i < sz; i++){
+        istr >> id;
+        istr >> buf;
+        if (buf == "Catalog"){
+            quantity_catalog++;
+            ptr = &catalog;
+            //переместить указатель
+            ptr->read(istr);
+            
+            table.insert(std::make_pair(id, ptr->clone()));
+        }
+        if (buf == "File"){
+            quantity_file++;
+            ptr = &file;
+            //переместить указатель
+            ptr->read(istr);
+        
+            table.insert(std::make_pair(id, ptr->clone()));
+        }
+        if (buf == "Protected_File"){
+            quantity_file++;
+            ptr = &pfile;
+            //переместить указатель
+            ptr->read(istr);
+            
+            table.insert(std::make_pair(id, ptr->clone()));
+        }
+    }
     return istr;
 }
-*/
-//забей на DOS и просто записывай каталог в файл
-//для пользователй выдели больше места и не еби себе мозг
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

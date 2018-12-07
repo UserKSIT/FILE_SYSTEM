@@ -10,14 +10,16 @@
 
 using namespace std;
 
-Desp_sys::Desp_sys(){
-    root = new Descatalog("root");
-    current_user = "";
-    current_location = "root/";
-    quantity_file = 0;
-    quantity_catalog = 1;
-    User object("ADMIN");
-    this->insert_user("ADMIN", object);
+Desp_sys::Desp_sys(const string & word){
+        if(word == "Yes"){
+            root = new Descatalog("root");
+            current_user = "";
+            current_location = "root/";
+            quantity_file = 0;
+            quantity_catalog = 1;
+            User object("ADMIN");
+            this->insert_user("ADMIN", object);
+    }
     
 }
 
@@ -94,6 +96,54 @@ std::ostream & operator << (std::ostream &flow, const Desp_sys &object) {
         flow << "Id user: " << i->first << "  Name user: " << object.get_name(i) << "  Info key: " << object.get_info_key(i) << std::endl;
     }
     return flow;
+}
+
+Desp_sys & read_out_file(std::istream& istr, Desp_sys &object){
+    Desp_sys SYSTEM;
+    
+    size_t sz_table;
+    string key, name, info_key;
+    int next = 1;
+    long int st_cat;
+    User buf;
+    
+    sys.seekg(std::ios::beg);
+
+    istr >> sz_table;
+    for(int i = 0; i < sz_table; i++){
+        istr >> key;
+        istr >> name;
+        istr >> info_key;
+        
+        buf.set_name(name);
+        buf.set_info_key(info_key);
+        object.insert_user(key, buf);
+    }
+    istr >> next;
+    
+    
+    st_cat = sys.tellg();
+    
+    
+    while (next != 0){
+        istr >> sz_table;
+        for(int i = 0; i < sz_table; i++){
+            istr >> key;
+            istr >> name;
+            istr >> info_key;
+            
+            buf.set_name(name);
+            buf.set_info_key(info_key);
+            object.insert_user(key, buf);
+        }
+        istr >> next;
+    }
+    
+    sys.seekg(st_cat);
+    
+    object.get_root()->read(istr);
+    
+    return object;
 }
 
 
