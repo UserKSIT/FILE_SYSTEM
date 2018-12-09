@@ -84,6 +84,16 @@ const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
 
 int Decrypt(Descatalog *&view){
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    ID key(name);
+    
+    view->decrypt_file(key);
+    
     return 0;
 }
 
