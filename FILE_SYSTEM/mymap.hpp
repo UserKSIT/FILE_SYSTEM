@@ -5,7 +5,7 @@
 //  Created by Артём on 05/12/2018.
 //  Copyright © 2018 Ерошев Артём. All rights reserved.
 //
-
+/*
 #ifndef mymap_hpp
 #define mymap_hpp
 
@@ -188,5 +188,5 @@ bool MyMap<k, t>::__erase(MyMapIt<std::pair<const k, t>> position){
 //--------------------------------------------------------------------------------------
 
 
-
-#endif /* mymap_hpp */
+#endif 
+*/

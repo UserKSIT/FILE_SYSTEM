@@ -37,8 +37,7 @@ public:
     
     bool push_stream(const string &, const std::ios::pos_type &, int &);
     bool delete_info(const std::ios::pos_type &, int &);
-    std::ostream & return_info(std::ostream &, const std::ios::pos_type &, const int &) const;
-    char * return_info(const std::ios::pos_type &shift, const int &size) const;
+    std::string return_info(const std::ios::pos_type &, const int &) const;
     
     std::ios::pos_type & open_stream_for_file(std::ios::pos_type &);
     

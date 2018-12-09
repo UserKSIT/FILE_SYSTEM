@@ -44,6 +44,7 @@ public:
     
     bool check_in_table(const string &);
     
+    
     //All friends class's
  
     //set pointer root
@@ -60,7 +61,6 @@ public:
     bool remove(const string &);
     //change parametr user
     bool change(const string &, const User &);
-    
 };
 bool push_file(const string &info, std::ios::pos_type &virtual_adress, int &size);
 

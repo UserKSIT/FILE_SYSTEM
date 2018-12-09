@@ -279,14 +279,17 @@
 				HEADER_SEARCH_PATHS = (
 					"/Library_C++/Library_Template/Library_Template",
 					/usr/local/include,
+					/framework/rc5simple_1_30/Crypt/Crypt,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug",
 					/usr/local/lib,
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Crypt-ghoezcvxnxcfngdukggoddrpixsj/Build/Products/Debug",
 				);
 				OTHER_LDFLAGS = (
 					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a",
 					/usr/local/lib/gtest.a,
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Crypt-ghoezcvxnxcfngdukggoddrpixsj/Build/Products/Debug/libCrypt.a",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -303,14 +306,17 @@
 				HEADER_SEARCH_PATHS = (
 					"/Library_C++/Library_Template/Library_Template",
 					/usr/local/include,
+					/framework/rc5simple_1_30/Crypt/Crypt,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug",
 					/usr/local/lib,
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Crypt-ghoezcvxnxcfngdukggoddrpixsj/Build/Products/Debug",
 				);
 				OTHER_LDFLAGS = (
 					"/Users/artem/Library/Developer/Xcode/DerivedData/Library_Template-djxeyksnwgavdaczrwklcvqfkomx/Build/Products/Debug/libLibrary_Template.a",
 					/usr/local/lib/gtest.a,
+					"/Users/artem/Library/Developer/Xcode/DerivedData/Crypt-ghoezcvxnxcfngdukggoddrpixsj/Build/Products/Debug/libCrypt.a",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

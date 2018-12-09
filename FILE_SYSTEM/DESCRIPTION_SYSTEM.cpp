@@ -107,7 +107,7 @@ Desp_sys & read_out_file(std::istream& istr, Desp_sys &object){
     long int st_cat;
     User buf;
     
-    sys.seekg(std::ios::beg);
+    sys.seekg(0, std::ios::beg);
 
     istr >> sz_table;
     for(int i = 0; i < sz_table; i++){
@@ -141,17 +141,10 @@ Desp_sys & read_out_file(std::istream& istr, Desp_sys &object){
     
     sys.seekg(st_cat);
     
-    object.get_root()->read(istr);
+   
     
     return object;
 }
-
-
-
-
-
-
-
 
 
 

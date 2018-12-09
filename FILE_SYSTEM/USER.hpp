@@ -24,8 +24,8 @@ public:
     const string & get_name() const {return name;}
     const string & get_info_key() const {return info_key;}
     
-    const string & set_name(const string &_name) {name = _name; return name; }
-    const string & set_info_key(const string &_key) {info_key = _key; return info_key;}
+    bool set_name(const string &_name) {name = _name; return true; }
+    bool set_info_key(const string &_key) {info_key = _key; return true;}
     
     friend std::istream & operator >> (std::istream &flow, User &object);
 };

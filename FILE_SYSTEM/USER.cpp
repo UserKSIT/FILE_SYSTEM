@@ -11,12 +11,8 @@
 using namespace std;
 
 std::istream & operator >> (std::istream &flow, User &object){
-    string name;
-    std::cout << "Name = ";
-    std::cin >> name;
-    object.name = name;
-    object.info_key = "";
-    std::cin.clear();
+    flow >> object.name;
+    flow >> object.info_key;
     
     return flow;
 }

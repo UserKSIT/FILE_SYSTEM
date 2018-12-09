@@ -16,6 +16,9 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <set>
+#include "Crypt.hpp"
+
 
 extern string current_user;
 extern string current_location;
@@ -25,6 +28,8 @@ extern Desstream main_s;
 extern Desstream temp;
 extern Desstream sym;
 
+
+
 extern int quantity_file;
 extern int quantity_catalog;
 
@@ -32,9 +37,13 @@ using namespace std;
 struct ID{
     string name;
     string location;
-    std::ios::pos_type virtual_adress;
+    //adress shift on disk(file)
+    long int virtual_adress;
     
-    ID(const string name = ""):name(name){ location = current_location; sys.seekg(std::ios::end);virtual_adress = sys.tellg();}
+    ID(const string name = ""):name(name){ location = current_location; sys.seekg(0, std::ios::end);virtual_adress = sys.tellg();}
+    
+    bool empty() const {if (name == ""){return true;} else {return false;}}
+    bool clear() {name = ""; location = ""; virtual_adress = 0; return true;}
     
     const string get_name() const {return name;}
      void set_location(const string &loc) {location = loc;}
@@ -53,6 +62,7 @@ struct ID{
     //parent's absract class for classes "Descatalog" and "Desfile"
     class Basic_description{
     protected:
+        std::string name;
         //size object - file or directory
         int size;
         //table access to object. Containing id user and level privileges
@@ -66,11 +76,16 @@ struct ID{
         Basic_description& operator = (const Basic_description &);
  
         bool insert_access(const string &, const string &);
-        bool check_access(const string &, const string &);
+        std::string check_access(const string &);
         void change_access(const string &, const string &);
+        std::string show_access() const;
+        
         
         
         virtual Basic_description * clone() const = 0;
+        virtual std::string get_status() const = 0;
+        virtual int open() = 0;
+        virtual bool close_file() = 0;
         
         
         virtual std::ostream & write(std::ostream&) = 0;
@@ -79,13 +94,15 @@ struct ID{
         friend std::istream& operator >> (std::istream&, map<const string, const string> &);
         friend std::ostream& operator << (std::ostream&, map<const string, const string> &);
         
+        
+        
         virtual ~Basic_description(){};
     };
 
     //Class description directory. Include in itself struct catalog - table containing file and subdirectory
     class Descatalog: public Basic_description{
     private:
-        //adress shift on disk(file)
+        //add name
         //table containing file and subdirectory
         map <ID, Basic_description *> struct_catalog;
         //print info table
@@ -93,9 +110,9 @@ struct ID{
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(): parent(nullptr){this->insert_access(current_user, "move"); size = sizeof(*this);}// to do
+        Descatalog(const string & name = "no name"): parent(nullptr){this->insert_access(current_user, "move"); size = sizeof(*this); this->name = name;}// to do
         
-        //Descatalog(const string &, const string &, const string &, const string &);
+
         Descatalog(const Descatalog &);
         
         ~Descatalog();
@@ -107,12 +124,17 @@ struct ID{
         Descatalog & set_parent(Descatalog *);
         
         Descatalog& operator = (const Descatalog &);
-        
+        //вставка файла или подкатолога
         bool insert(ID &, const Basic_description *);
-        
+        //delete object in catalog
         bool remove(ID &);
-        
+        //change object in catalog
         bool replace(ID &, const Basic_description *);
+        
+        bool change_name(const string &, const ID &);
+        
+        bool crypt_file(ID &);
+        bool decrypt_file(ID &);
         
         Descatalog * next(ID &);
         Descatalog * back();
@@ -121,15 +143,24 @@ struct ID{
         
         Basic_description * open_file(ID &, int &);
         
-        map <ID, Basic_description *>::const_iterator find(ID &) const;
+        map <ID, Basic_description *>::const_iterator find(ID &, bool &) const;
+        
+        virtual std::string get_status() const;
+        
+        bool pull_in_buffer(ID &, ID &, Basic_description *&);
+        bool extract_out_buffer(ID &, Basic_description *&);
         
         //function delete object - file or catalog
         
-        Descatalog * delete_catalog(ID &);
-        Descatalog * delete_file(ID &);
-        
         virtual std::ostream & write(std::ostream&);
         virtual std::istream & read(std::istream&);
+        
+        virtual int open(){return 0;}
+        virtual bool close_file(){return false;}
+        
+        std::string show_access(const ID &) const;
+        
+        
         
         
         friend std::istream& operator >> (std::istream&, Descatalog &);
@@ -155,7 +186,7 @@ struct ID{
         //print info file
         virtual std::ostream & print(std::ostream &) const;
     public:
-        Desfile():master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); this->insert_access(current_user, "rw"); size = 0;};
+        Desfile(const string & name = "no name"):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); this->insert_access(current_user, "rw"); size = 0; this->name = name;};
         
         Desfile(const Desfile &);
        
@@ -168,44 +199,60 @@ struct ID{
         }
         
         Desfile & open_stream();
-
-        
-        bool crypt_file();
         
         Desstream * get_stream() const {return ptr_stream;}
+        
+        bool delete_info(){if (ptr_stream->delete_info(shift_stream, size)){return true;}else{return false;}}
+        
+        virtual std::string get_status() const;
+  
+        std::string get_master() const {return master;}
         
         virtual std::ostream & write(std::ostream&);
         virtual std::istream & read(std::istream&);
         
-        friend std::istream & operator << (std::istream &, tm * );
+        std::istream & read_time (std::istream &, tm * );
         friend std::ostream & operator << (std::ostream &, tm * );
         
         //-----------------------------------------------------
-        int open();
-        bool close_file() const;
+        virtual int open();
+        virtual bool close_file();
         void write_file(const string &);
         friend std::ostream & operator << (std::ostream &flow, Desfile &object){return object.print(flow);}
-        friend std::ostream & operator << (std::ostream &, tm *);
         //----------------------------------------------------
     };
 
 class ProtectedDesfile: public Desfile{
 private:
-    map <const string, const string> table_users_access;
-    //virtual std::ostream & print(std::ostream &) const;
+    map<const string, int> table_users_access;
+    long int reserve_shift;
+    virtual std::ostream & print(std::ostream &) const;
 public:
-    ProtectedDesfile(): Desfile(){}
+    ProtectedDesfile(const string &name = "", int  key = 0): Desfile(name), reserve_shift(0){this->insert_user(current_user, key);ptr_stream = &sym;}
     
     virtual ProtectedDesfile * clone() const {
         return new ProtectedDesfile(*this);
     }
     
-    bool insert_user(const string &, const string &);
+    bool insert_user(const string &, int &);
     bool remove_user(const string &);
     
+    bool replace_user(const string &, int &);
+    
+    
+    virtual bool close_file();
+    virtual int open();
+    
+    
+    virtual std::string get_status() const;
+    
+    //work with file
     virtual std::ostream & write(std::ostream&);
     virtual std::istream & read(std::istream&);
     
+    friend std::ostream& operator << (std::ostream&, set<const string> &);
+    
+    //print data file
     friend std::ostream & operator << (std::ostream &flow, ProtectedDesfile &object){return object.print(flow);}
 };
 
@@ -215,7 +262,8 @@ public:
 
 
 std::istream& read_access_user(std::istream&, map<const string, const string> &);
-std::istream& read_struct_catalog(std::istream&, map<const string, Basic_description *> &);
+std::istream& read_table_access_pf(std::istream&, map<const string, int> &);
+std::istream& read_struct_catalog(std::istream&, map<ID, Basic_description *> &);
 
 
 

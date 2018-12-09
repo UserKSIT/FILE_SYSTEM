@@ -17,7 +17,7 @@ using namespace std;
 //копирующий конструктор для клона
 Descatalog::Descatalog(const Descatalog &object){
     size = object.size;
-
+    name = object.name;
     parent = object.parent;
     
     std::map<const string, const string>::const_iterator i;
@@ -35,12 +35,15 @@ Descatalog::~Descatalog(){
         delete p->second;
         p->second = nullptr;
     }
+    access_user.clear();
 }
 //копирующий конструктор
 Descatalog& Descatalog::operator = (const Descatalog &object){
     std::map<ID, Basic_description *>::iterator p;
     if (this != &object){
         size = object.size;
+        name = object.name;
+        parent = object.parent;
 
         //------------------------------
         access_user.clear();
@@ -63,6 +66,7 @@ Descatalog& Descatalog::operator = (const Descatalog &object){
 Basic_description& Basic_description::operator = (const Basic_description &object){
     if (this != &object){
         size = object.size;
+        name = object.name;
         //------------------------------
         access_user.clear();
         
@@ -80,12 +84,14 @@ bool Descatalog::insert(ID &iden, const Basic_description *object){
     if (p == struct_catalog.end()){
         std::pair<std::map<ID, Basic_description *>::iterator, bool> pp = struct_catalog.insert(std::make_pair(iden, object->clone()));
         if (!pp.second)
-            throw std::out_of_range("can't insert new item into map");
+            throw std::ios_base::failure("can't insert new item into map");
         res = true;
     }
+    else
+        std::cout << "Erro. Duplicate object" << std::endl;
     return res;
 }
-
+//delete object in catalog
 bool Descatalog::remove(ID &iden)// to do
 {
     bool res = false;
@@ -96,19 +102,38 @@ bool Descatalog::remove(ID &iden)// to do
         struct_catalog.erase(p);
         res = true;
     }
+    else
+        std::cout << "Not found" << std::endl;
     return res;
 }
 
+bool Descatalog::change_name(const string &new_name, const ID &key){
+    bool res = false;
+    std::map<ID, Basic_description *>::iterator p = struct_catalog.find(key);
+    if (p != struct_catalog.end()){
+        Basic_description * ptr = p->second;
+        ID save_me = p->first;
+        replace(save_me, ptr);
+        
+        res = true;
+    }
+    else
+        std::cout << "Not found" << std::endl;
+    return res;
+}
+//delete user in table access
 bool ProtectedDesfile::remove_user(const string &name){
     bool res = false;
-    std::map<const string, const string>::iterator p = table_users_access.find(name);
+    std::map<const string, int>::iterator p = table_users_access.find(name);
     if (p != table_users_access.end()){
         table_users_access.erase(p);
         res = true;
     }
+    else
+        std::cout << "Not found" << std::endl;
     return res;
 }
-
+//change object in catalog
 bool Descatalog::replace(ID &iden, const Basic_description *object)
 {
     bool res = false;
@@ -118,9 +143,11 @@ bool Descatalog::replace(ID &iden, const Basic_description *object)
         p->second = object->clone();
         res = true;
     }
+    else
+        std::cout << "Not found" << std::endl;
     return res;
 }
-
+//move in next catalog
 Descatalog * Descatalog::next(ID &iden){// to do
     std::map<ID, Basic_description *>::iterator p = struct_catalog.find(iden);
     if (p != struct_catalog.end()){
@@ -131,33 +158,35 @@ Descatalog * Descatalog::next(ID &iden){// to do
         return ptr;
         //}
     }
+    else
+        std::cout << "Not found" << std::endl;
     return nullptr;
 }
-
+//back in previos catalog
 Descatalog * Descatalog::back(){//change?
     if (parent != nullptr){
-        //int sz1 = name.size();
-        //int sz2 = current_location.size();
-        //int delta = sz2 - sz1 - 1;
+        long int sz1 = name.size();
+        long int sz2 = current_location.size();
+        long delta = sz2 - sz1 - 1;
         
-        //current_location = current_location.substr(0, delta);
+        current_location = current_location.substr(0, delta);
         return parent;
     }
     else
         return nullptr;
 }
-
+//add new object in catalog
 Descatalog * Descatalog::add_object(const string &name){
     //
     Basic_description *ptr = nullptr;
-    Descatalog catalog;
+    Descatalog catalog(name);
     catalog.set_parent(this);
-    Desfile file;
+    Desfile file(name);
     ID id(name);
     
     int ans = Answer(Sh, NumSh);
         if (!std::cin.good())
-            throw std::out_of_range("Error when a category object was entered");
+            throw std::ios_base::failure("Error when a category object was entered");
         switch (ans){
             case 1:{
                 
@@ -166,7 +195,6 @@ Descatalog * Descatalog::add_object(const string &name){
                 break;
             }
             case 2:{
-                // почему если вставить сюда происходит SIGABIRT - вызывается чисто виртуальная ф-ция?
                 quantity_file++;
                 ptr = &file;
                 break;
@@ -179,7 +207,7 @@ Descatalog * Descatalog::add_object(const string &name){
             std::cout << "Duplicate name" << std::endl;
     }
     else
-        std::cout << "W?" << std::endl;
+        std::cout << "Error definition Basic desription" << std::endl;
     return this;
 }
 
@@ -204,33 +232,7 @@ int Answer(const std::string alt[], int n)
     std::cin.ignore(80, '\n');
     return answer;
 }
-
-Descatalog * Descatalog::delete_catalog(ID &iden){
-    std::map<ID, Basic_description *>::iterator p = struct_catalog.find(iden);
-    if (p != struct_catalog.end()){
-        //динамическое приведение типа
-        Descatalog * ptr = dynamic_cast<Descatalog *>(p->second);
-        if (ptr)
-            this->remove(iden);
-        else
-            std::cout << "Not found" << std::endl;
-    }
-    return this;
-}
-
-Descatalog * Descatalog::delete_file(ID &iden){//t
-    std::map<ID, Basic_description *>::iterator p = struct_catalog.find(iden);
-    if (p != struct_catalog.end()){
-        //динамическое приведение типа
-        Desfile * ptr = dynamic_cast<Desfile *>(p->second);
-        if (ptr)
-            this->remove(iden);
-        else
-            std::cout << "Not found" << std::endl;
-    }
-    return this;
-}
-
+//insert in table access (for all type object)
 bool Basic_description::insert_access(const string &user, const string &mode){
     bool res = false;
     std::map<const string, const string>::iterator p = access_user.find(user);
@@ -238,98 +240,143 @@ bool Basic_description::insert_access(const string &user, const string &mode){
         std::pair<std::map<const string, const string>::iterator, bool> pp =
         access_user.insert(std::make_pair(user, mode));
         if (!pp.second)
-            throw std::out_of_range("can't insert new item into map");
-        //динамическое приведение к файлу
+            throw std::ios_base::failure("can't insert new item into map");
         res = true;
     }
+    else
+        std::cout << "Erro. Duplicate object" << std::endl;
     return res;
 }
-
-bool ProtectedDesfile::insert_user(const string &user, const string &mode){
+//insert in special table access for protected file
+bool ProtectedDesfile::insert_user(const string &user, int& key){
     bool res = false;
-    std::map<const string, const string>::iterator p = table_users_access.find(user);
+    std::map<const string, int>::iterator p = table_users_access.find(user);
     if (p == table_users_access.end()){
-        std::pair<std::map<const string, const string>::iterator, bool> pp =
-        table_users_access.insert(std::make_pair(user, mode));
+        std::pair<std::map<const string, int>::iterator, bool> pp =
+        table_users_access.insert(std::make_pair(user, key));
         if (!pp.second)
-            throw std::out_of_range("can't insert new item into map");
-        //динамическое приведение к файлу
+            throw std::ios_base::failure("can't insert new item into map");
         res = true;
     }
+    else
+        std::cout << "Erro. Duplicate object" << std::endl;
     return res;
 }
-
+//virtual print content catalog
 std::ostream & Descatalog::print(std::ostream &flow) const{
     std::map<ID, Basic_description *>::const_iterator p;
     for (p = struct_catalog.begin(); p != struct_catalog.end(); ++p)
         flow << p->first.name << std::endl;
     return flow;
 }
-
+//virtual print content file and protected file
 std::ostream & Desfile::print(std::ostream &flow) const{
-    return ptr_stream->return_info(flow, shift_stream, size);
+    flow << ptr_stream->return_info(shift_stream, size) << std::endl;
+    return flow;
 }
-
+std::ostream & ProtectedDesfile::print(std::ostream &flow) const{
+    flow << ptr_stream->return_info(shift_stream, size) << std::endl;
+    return flow;
+}
+//set parent catalog for move like in tree
 Descatalog & Descatalog::set_parent(Descatalog *pt){
     parent = pt;
     return *this;
 }
-
+//reserve place for data file
 Desfile & Desfile::open_stream(){
     ptr_stream->open_stream_for_file(shift_stream);
     return *this;
 }
 
 int Desfile::open(){
+    int res = 0;
     if (tag == 1){
         std::cout << "File have been open" << std::endl;
-        return 0;
+        return res;
     }
-    int res = 0;
-    int ans;
-    ans = Answer(Mode, NumMode);
-        if (!std::cin.good())
-            throw std::out_of_range("Error when a category object was entered");
-        switch (ans){
-            case 0:
-                break;
-            case 1:
-                if (check_access(current_user, "r"))
-                {
-                    tag = 1;
-                    res = 1;
-                }
-                break;
-            case 2:
-                if (check_access(current_user, "w")){
-                    tag = 1;
-                    res = 2;
-                }
-                break;
-            case 3:
-                if (check_access(current_user, "rw")){
-                    tag = 1;
-                    res = 3;
-                }
-                break;
+    std::string key;
+    key = check_access(current_user);
+    if (key != ""){
+        if (key == "r")
+        {
+            tag = 1;
+            res = 1;
         }
+        if (key == "w"){
+            tag = 1;
+            res = 2;
+        }
+        if (key == "rw"){
+            tag = 1;
+            res = 3;
+        }
+    }
     return res;
 }
 
+int ProtectedDesfile::open(){
+    //check table_users_access
+    std::map<const string, int>::iterator p = table_users_access.find(current_user);
+    if (p != table_users_access.end()){
+        std::ostringstream out;
+        out << ptr_stream->return_info(shift_stream, size);
+        
+        int gamma = p->second;
+        for (int i = 0; i != out.str().size(); ++i){
+            out.str()[i] = out.str()[i] - gamma;
+        }
+            
+            reserve_shift = shift_stream;
+            ptr_stream->open_stream_for_file(shift_stream);
+            ptr_stream->push_stream(out.str(), shift_stream, size);
+            return 3;
+        }
+    else
+        return 0;
+    //decrypt file
+    //change ptr
+}
+//virtual open?
 Basic_description * Descatalog::open_file(ID &iden, int &res){
     map <ID, Basic_description *>::const_iterator p = struct_catalog.find(iden);
     if (p != struct_catalog.end()){
-        Desfile *ptr = dynamic_cast<Desfile *>(p->second);
-        res = ptr->open();
+        res = p->second->open();
         return p->second;
     }
     else
         return nullptr;
 }
-
-bool Desfile::close_file() const{
+//
+bool Desfile::close_file(){
     if (tag == 1){
         tag = 0;
+        return true;
+    }
+    else{
+        std::cout << "There haven't open file" << std::endl;
+        return false;
+    }
+}
+
+bool ProtectedDesfile::close_file(){
+    if (tag == 1){
+        tag = 0;
+        std::ostringstream out;
+        
+        out << ptr_stream->return_info(shift_stream, size);
+        
+        unsigned rand_value = 11;
+        srand(rand_value);
+        
+        int gamma = rand();
+        
+        for (int i = 0; i != out.str().size(); i++){
+            out.str()[i] = out.str()[i] + gamma;
+        }
+            
+        ptr_stream->delete_info(shift_stream, size);
+        shift_stream = reserve_shift;
         return true;
     }
     else{
@@ -343,26 +390,23 @@ void Desfile::write_file(const string &info){
 }
 
 
-bool Basic_description::check_access(const string &id, const string &mode){
-    bool res = false;
+std::string Basic_description::check_access(const string &id){
     std::map<const string, const string>::iterator p = access_user.find(id);
-    if (p != access_user.end()){
-        if (p->second == "rw")
-            return true;
-        if (p->second == mode)
-            return true;
-        }
-        else
-            return res;
-    return res;
+    if (p != access_user.end())
+        return p->second;
+    else
+        return "";
 }
 
-map <ID, Basic_description *>::const_iterator Descatalog::find(ID &iden) const {
+map <ID, Basic_description *>::const_iterator Descatalog::find(ID &iden, bool &flag) const {
     std::map<ID, Basic_description *>::const_iterator p = struct_catalog.find(iden);
-    if(p == struct_catalog.end())
+    if(p == struct_catalog.end()){
         std::cout << "The object with Name \"" << iden.name << "\" is absent in container" << std::endl;
+        flag = false;
+    }
     else{
         std::cout << "The object with Name \"" << &(*p).first << "\" is a " << iden.name << std::endl;
+        flag = true;
         }
     return p;
 }
@@ -383,6 +427,7 @@ Desfile& Desfile::operator = (const Desfile &object)
         timeinfo = object.timeinfo;
         master = object.master;
         ptr_stream = object.ptr_stream;
+        name = object.name;
         
         //--------------------------------------
         ptr_stream->delete_info(shift_stream, size);
@@ -401,6 +446,7 @@ Desfile::Desfile(const Desfile &object){
     timeinfo = object.timeinfo;
     master = object.master;
     ptr_stream = object.ptr_stream;
+    name = object.name;
     
     std::map<const string, const string>::const_iterator pp;
     for (pp = object.access_user.begin(); pp != object.access_user.end(); ++pp)
@@ -428,8 +474,174 @@ void  Basic_description::change_access(const string &id, const string &mode){
         return;
     }
 }
+std::string Descatalog::show_access(const ID &key) const{
+    std::ostringstream out;
+    map<ID, Basic_description *>::const_iterator c = struct_catalog.find(key);
+    if (c != struct_catalog.end()){
+        out << c->second->show_access();
+    }
+    else
+        std::cout << "Not found" << std::endl;
+    return out.str();
+}
 
+std::string Basic_description::show_access() const{
+    std::ostringstream out;
+    map<const string, const string>::const_iterator p;
+    for (p = access_user.begin(); p != access_user.end(); p++)
+        out << p->first << ' ' << p->second << std::endl;
+    
+    return out.str();
+}
 
+//to do
+bool Descatalog::crypt_file(ID &key){
+    map<ID, Basic_description *>::iterator p = struct_catalog.find(key);
+    if(p != struct_catalog.end()){
+        Desfile * ptr = dynamic_cast<Desfile *>(p->second);
+        if (ptr != nullptr){
+            if (current_user == ptr->get_master()){
+                std::ostringstream out;
+                
+                out << *ptr;
+                
+                unsigned rand_value = 11;
+                srand(rand_value);
+                
+                int gamma = rand();
+                
+                
+                for (int i = 0; i != out.str().size(); i++){
+                    out.str()[i] = out.str()[i] + gamma;
+                }
+                if(ptr->delete_info())
+                    std::cout << "Ok" << std::endl;
+                
+                
+                ProtectedDesfile crypt_f(p->first.name);
+                if(!crypt_f.replace_user(current_user, gamma)){
+                    throw std::invalid_argument("Incorrect access");
+                }
+                crypt_f.write_file(out.str());
+                
+                
+                
+                Basic_description * ptr = &crypt_f;
+                ID buf(p->first.name);
+                buf.location = p->first.location;
+                buf.virtual_adress = p->first.virtual_adress;
+                replace(buf, ptr);
+                return true;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+bool Descatalog::decrypt_file(ID &key){
+    std::map<ID, Basic_description *>::iterator p = struct_catalog.find(key);
+    if(p != struct_catalog.end()){
+        ProtectedDesfile * ptr = dynamic_cast<ProtectedDesfile *>(p->second);
+        if (ptr != nullptr){
+            std::ostringstream out;
+            out << *ptr;
+            //ptr->//get key decrypt
+            for (int i = 0; i != out.str().size(); ++i){
+                out.str()[i] = out.str()[i] - gamma;
+            }
+            ptr->delete_info();
+            // open new stream main and push out
+            
+        }
+    }
+    else
+        return false;
+}
+
+bool ProtectedDesfile::replace_user(const string &name, int &key)
+{
+    bool res = false;
+    std::map<const string, int>::iterator p = table_users_access.find(name);
+    if (p != table_users_access.end()){
+        table_users_access.erase(p);
+        table_users_access.insert(std::make_pair(name, key));
+        res = true;
+    }
+    else
+        std::cout << "Not found" << std::endl;
+    return res;
+}
+
+std::string Descatalog::get_status() const{
+    std::ostringstream out;
+    
+    out << "Name catalog: " << name << std::endl;
+    out << "Size: " << size << std::endl;
+    out << "Table access:" << std::endl;
+    out << &access_user << std::endl;
+    out << &struct_catalog << std::endl;
+    
+    return out.str();
+}//to do
+std::string Desfile::get_status() const{
+    std::ostringstream out;
+    
+    out << "Name file: " << name << std::endl;
+    out << "Time:" << std::endl << timeinfo << std::endl;
+    out << "Master: " << master << std::endl;
+    long int tmp = shift_stream;
+    out << "Shift in file: " << tmp << std::endl;
+    out << "Size: " << size << std::endl;
+    out << "Table access:" << std::endl;
+    out << &access_user << std::endl;
+    
+    return out.str();
+}//to do
+std::string ProtectedDesfile::get_status() const{
+    std::ostringstream out;
+    
+    out << "Name file: " << name << std::endl;
+    out << "Time:" << std::endl << timeinfo << std::endl;
+    out << "Master: " << master << std::endl;
+    long int tmp = shift_stream;
+    out << "Shift in file: " << tmp << std::endl;
+    out << "Size: " << size << std::endl;
+    out << "Table access:" << std::endl;
+    out << &access_user << std::endl;
+    out << "Table user have acess to content:" << std::endl;
+    out << &table_users_access << std::endl;
+    
+    return out.str();
+}
+
+bool Descatalog::pull_in_buffer(ID &key, ID &BUFFER_key, Basic_description *& BUFFER_ptr){
+    map<ID, Basic_description *>::iterator p = struct_catalog.find(key);
+    if (p != struct_catalog.end()){
+        BUFFER_key = p->first;
+        BUFFER_ptr = p->second;
+        return true;
+    }
+    else{
+        std::cout << "Not found" << std::endl;
+        return false;
+    }
+}
+
+bool Descatalog::extract_out_buffer(ID &BUFFER_key, Basic_description *& BUFFER_ptr){
+    if (!BUFFER_key.empty() && BUFFER_ptr != nullptr){
+        this->insert(BUFFER_key, BUFFER_ptr);
+        BUFFER_key.clear();
+        BUFFER_ptr = nullptr;
+        return true;
+    }
+    else
+        return false;
+}
 //write file
 std::ostream& Descatalog::write(std::ostream& ostr)
 {
@@ -442,7 +654,7 @@ std::istream& Descatalog::read(std::istream& istr)
 {
     istr >> size;
     read_access_user(istr, access_user);
-    //read_struct_catalog(istr, struct_catalog);
+    read_struct_catalog(istr, struct_catalog);
     return istr;
 }
 //write file
@@ -459,9 +671,24 @@ std::ostream& ProtectedDesfile::write(std::ostream& ostr){
     return ostr;
 }
 std::istream& Desfile::read(std::istream& istr){
+    //read_time(istr, timeinfo);
+    istr >> timeinfo->tm_sec >> timeinfo->tm_min >> timeinfo->tm_hour >>timeinfo->tm_mday;
+    istr >> timeinfo->tm_mon >> timeinfo->tm_year >> timeinfo->tm_wday >> timeinfo->tm_yday;
+    istr >> timeinfo->tm_isdst;
+    long int buf;
+    istr >> buf;
+    shift_stream = buf;
     return istr;
 }
 std::istream& ProtectedDesfile::read(std::istream& istr){
+    //read_time(istr, timeinfo);
+    istr >> timeinfo->tm_sec >> timeinfo->tm_min >> timeinfo->tm_hour >>timeinfo->tm_mday;
+    istr >> timeinfo->tm_mon >> timeinfo->tm_year >> timeinfo->tm_wday >> timeinfo->tm_yday;
+    istr >> timeinfo->tm_isdst;
+    long int buf;
+    istr >> buf;
+    shift_stream = buf;
+    read_table_access_pf(istr, table_users_access);
     return istr;
 }
 //write time info
@@ -473,7 +700,7 @@ std::ostream & operator << (std::ostream & flow, tm * object){
     return flow;
 }
 //read time info
-std::istream & operator << (std::istream & flow, tm * object){
+std::istream & read_time(std::istream & flow, tm * object){
     flow >> object->tm_sec >> object->tm_min >> object->tm_hour >>object->tm_mday;
     flow >> object->tm_mon >> object->tm_year >> object->tm_wday >> object->tm_yday;
     flow >> object->tm_isdst;
@@ -512,65 +739,120 @@ std::istream& read_access_user(std::istream& istr, map<const string, const strin
     return istr;
 }
 //write map struct catalog
-std::ostream& operator << (std::ostream& ostr, map<const string, Basic_description *> &table)
+std::ostream& operator << (std::ostream& ostr, map<ID, Basic_description *> &table)
 {
     if(!table.empty()){
+        Basic_description * ptr;
         size_t sz = table.size();
-        
+        //write size map;
         ostr << sz << ' ';
         
-        map<const string, Basic_description *>::const_iterator i;
+        map<ID, Basic_description *>::const_iterator i;
         
         for(i = table.begin(); i != table.end(); i++){
-            ostr << i->first << ' ';
-            
+            ptr = i->second;
+            if (dynamic_cast<Descatalog *>(ptr)){
+                ostr << "Catalog" << ' ';
+            }
+            ptr = i->second;
+            if (dynamic_cast<Desfile *>(ptr)){
+                ostr << "File" << ' ';
+            }
+            ptr = i->second;
+            if (dynamic_cast<ProtectedDesfile *>(ptr)){
+                ostr << "Protected_File" << ' ';
+            }
+            //write data key
+            ostr << i->first.name << ' ' << i->first.location << ' ' << i->first.virtual_adress << ' ';
+            //write object
             i->second->write(ostr);
         }
     }
     return ostr;
 }
 //read map struct catalog
-std::istream& read_struct_catalog(std::istream& istr, map<const string, Basic_description *> &table)//?
+std::istream& read_struct_catalog(std::istream& istr, map<ID, Basic_description *> &table)//?
 //add check sucsess insert
 {
     size_t sz;
-    string id, buf;
-    istr >> sz;
+    string name, location, buf;
+    long int virtual_adress;
+    
     Basic_description * ptr;
     Descatalog catalog;
     Desfile file;
     ProtectedDesfile pfile;
-
     
+    ID iden;
+    //read size map
+    istr >> sz;
+
     for(int i = 0; i < sz; i++){
-        istr >> id;
+        //read key map
+        istr >> name;
+        istr >> location;
+        istr >> virtual_adress;
+        //init buffer for insert
+        iden.name = name;
+        iden.location = location;
+        iden.virtual_adress = virtual_adress;
+        //read type object
         istr >> buf;
+        //init type object
         if (buf == "Catalog"){
-            quantity_catalog++;
+            //quantity_catalog++;
             ptr = &catalog;
-            //переместить указатель
+            //sys.seekg(virtual_adress);
             ptr->read(istr);
             
-            table.insert(std::make_pair(id, ptr->clone()));
+            table.insert(std::make_pair(iden, ptr->clone()));
         }
         if (buf == "File"){
-            quantity_file++;
+            //quantity_file++;
             ptr = &file;
-            //переместить указатель
+            //sys.seekg(virtual_adress);
             ptr->read(istr);
         
-            table.insert(std::make_pair(id, ptr->clone()));
+            table.insert(std::make_pair(iden, ptr->clone()));
         }
         if (buf == "Protected_File"){
-            quantity_file++;
+            //quantity_file++;
             ptr = &pfile;
-            //переместить указатель
+            //sys.seekg(virtual_adress);
             ptr->read(istr);
             
-            table.insert(std::make_pair(id, ptr->clone()));
+            table.insert(std::make_pair(iden, ptr->clone()));
         }
     }
     return istr;
+}
+std::istream& read_table_access_pf(std::istream& istr, map<const string, int> &table){
+    size_t sz;
+    string name;
+    int key;
+    
+    istr >> sz;
+    
+    for(int i = 0; i != sz; i++){
+        istr >> name;
+        istr >> key;
+        
+        table.insert(std::make_pair(name, key));
+    }
+    return istr;
+}
+
+std::ostream& operator << (std::ostream& ostr, set<const string> &table){
+    size_t sz = table.size();
+    
+    ostr << sz << ' ';
+    
+    set<const string>::const_iterator i;
+    
+    for(i = table.begin(); i != table.end(); i++){
+        ostr << *i << ' ';
+    }
+    return ostr;
 }
 
 

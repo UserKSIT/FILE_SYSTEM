@@ -24,6 +24,9 @@ Desstream main_s;
 Desstream temp;
 Desstream sym;
 
+Basic_description * BUFFER_ptr;
+ID BUFFER_key;
+
 int quantity_file;
 int quantity_catalog;
 
@@ -38,6 +41,14 @@ int NextC(Descatalog *&);
 int BackC(Descatalog *&);
 int ChangeT(Descatalog *&);
 int ShowT(Descatalog *&);
+int Status(Descatalog *&);
+int ChangeName(Descatalog *&);
+int Copy(Descatalog *&);
+int GetInfo(Descatalog *&);
+int Pull(Descatalog *&);
+int Extract(Descatalog *&);
+int Encrypt(Descatalog *&);
+int Decrypt(Descatalog *&);
 
 int Write(Desfile *);
 int Read(Desfile *);
@@ -49,14 +60,14 @@ int Get_status(Desp_sys &);
 char *Get_String(void);
 
 const std::string Menu_Catalog[] = { "1. Add a object", "2. Find a object",
-    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "8. Change table access","9. Show table access", "0. End work" };
+    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "8. Change table access","9. Show table access", "10. Get status","11. Get data", "12. Copy", "13. Put in the buffer", "14. Pull out the buffer", "15. Encrypt file", "16. Decrypt file", "17. Change name", "0. End work" };
 const std::string Menu_File_1[] = { "1. Show info", "0. Close file"};
 const std::string Menu_File_2[] = {"1. Write info", "0. Close file"};
 const std::string Menu_File_3[] = {"1. Write info", "2. Read info", "0. Close file"};
 
 const std::string Menu_start[] = {"1. Start work", "2. Change table users", "3. Show statistic", "0. Quit programm"};
 
-int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT, ShowT};
+int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT, ShowT, Status, GetInfo, Copy, Pull, Extract, Encrypt, Decrypt, ChangeName};
 
 int(*Funcs_file1[])(Desfile *) = {nullptr, Read};
 int(*Funcs_file2[])(Desfile *) = {nullptr, Write};
@@ -72,9 +83,120 @@ const int NumFile1 = sizeof(Funcs_file1)/sizeof(Funcs_file1[0]);
 const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
 
+int Decrypt(Descatalog *&view){
+    return 0;
+}
+
+
+int Encrypt(Descatalog *&view){
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    ID key(name);
+    view->crypt_file(key);
+    
+    return 0;
+}
+
+
+int GetInfo(Descatalog *&view){
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    // to do
+    
+    return 0;
+}
+
+int Copy(Descatalog *&view){
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    ID key(name);
+    view->pull_in_buffer(key, BUFFER_key, BUFFER_ptr);
+    return 0;
+}
+
+int Extract(Descatalog *&view){
+    if(view->extract_out_buffer(BUFFER_key, BUFFER_ptr))
+        std::cout << "Ok" << std::endl;
+    else
+        std::cout << "Buffer is empty" << std::endl;
+    
+    return 0;
+}
+
+int Pull(Descatalog *&view){
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    ID key(name);
+    view->pull_in_buffer(key, BUFFER_key, BUFFER_ptr);
+    view->remove(key);
+    return 0;
+}
+
+int ChangeName(Descatalog *&view){
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    std::string new_name;
+    std::cout << "Enter a new name object: --> ";
+    std::cin >> new_name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a new name was entered");
+    
+    ID key(name);
+    
+    view->change_name(new_name, key);
+    return 0;
+}
+
+
+int Status(Descatalog *&view){
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a id was entered");
+    ID buf(name);
+    
+    bool flag = false;
+    map<ID, Basic_description *>::const_iterator p = view->find(buf, flag);
+    if (flag){
+        std::cout << p->second->get_status() << std::endl;
+    }
+    else{
+        std::cout << "Object not found" << std::endl;
+    }
+    return 0;
+}
 int ShowT(Descatalog *&view){
-    //Basic_description * ptr = view;
-    //std::cout << *ptr << std::endl;
+    std::string name;
+    std::cout << "Enter a name object: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    
+    ID buf(name);
+    
+    std::cout << view->show_access(buf) << std::endl;
     return 0;
 }
 
@@ -99,8 +221,8 @@ int ChangeT(Descatalog *&object){
     }
     else{
         std::cout << "You haven't master rule" << std::endl;
-    }*/
-    
+    }
+    */
     return 0;
 }
 
@@ -165,10 +287,14 @@ int Work(Desp_sys &object){
     std::cin >> user;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a id was entered");
+    
+    
     if (object.check_in_table(user)){
         object.start_work(user);
         
         std::cin.clear();
+        
+        
         Descatalog * ptr = object.get_root();
         int ind;
         try{
@@ -195,6 +321,8 @@ int Write(Desfile *object){
     getline(cin, info);
     if (!std::cin.good())
         throw std::invalid_argument("Error when a shape name was entered");
+    
+    
     object->write_file(info);
     
     std::cin.clear();
@@ -203,7 +331,7 @@ int Write(Desfile *object){
 }
 
 int Read(Desfile *object){
-    std::cout << *object;
+    std::cout << *object << std::endl;
     
     std::cout.clear();
     
@@ -217,6 +345,8 @@ int Add(Descatalog *&view)
     std::cin >> id;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a name was entered");
+    
+    
     view->add_object(id);
     
     return 0;
@@ -228,9 +358,14 @@ int Find(Descatalog *&view)
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a shape name was entered");
-    ID buf;
-    buf.name = name;
-    view->find(buf);
+    
+    bool flag = false;
+    ID buf(name);
+    view->find(buf, flag);
+    if (flag)
+        std::cout << "Found!" << std::endl;
+    else
+        std::cout << "Not found" << std::endl;
     
     return 0;
 }
@@ -241,13 +376,15 @@ int Remove(Descatalog *&view)
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
-    ID buf;
-    buf.name = name;
+    
+    
+    ID buf(name);
     if (view->remove(buf))
         std::cout << "Ok" << std::endl;
     else
         std::cout << "The object with Name \"" << name << "\" is absent in container"
         << std::endl;
+    
     return 0;
 }
 int ShowAll(Descatalog *&view){
@@ -282,7 +419,7 @@ int OpenF(Descatalog *&view){
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
     int res;
-    ID buf;
+    ID buf(name);
     buf.name = name;
     Basic_description * Bptr = view->open_file(buf, res);
     int ind;
@@ -314,10 +451,12 @@ int OpenF(Descatalog *&view){
         }
         ptr->close_file();
     }
+    else
+        std::cout << "You havrn't right for this file" << std::endl;
     
     return 0;
 }
-
+// to do
 int BackC(Descatalog *& view){
     Descatalog * parent = view->back();
     if(parent != nullptr){
@@ -330,15 +469,15 @@ int BackC(Descatalog *& view){
 }
 
 int main(int argc, char * argv[]) {
-    sys.open("/Programms C++/FILE_SYSTEM/FILE_SYSTEM/FILE_SYSTEM.txt");
-    sys.clear();
+    sys.open("/Programms C++/FILE_SYSTEM/FILE_SYSTEM/FILE_SYSTEM.txt",  std::ios::out | std::ios::in);
     if (sys.is_open())
         std::cout << "File is open\n";
     else{
         std::cout << "Fatal error\n";
         return 0;
     }
-    
+    sys.seekp(std::ios::beg);
+    std::cout << sys.tellp() << std::endl;
 
 /*    string ret, n, g;
     //getline(sys, ret);
@@ -383,18 +522,19 @@ int main(int argc, char * argv[]) {
 
 TEST(StreamFunction, PushInfo){
     Desfile object;
-    istringstream flow;
+    object.open_stream();
     string info;
     std::cout << "Input info" << std::endl;
 
     getline(cin, info);
 
-    for (int i = 0; i < 10; i++){
+    for (int i = 0; i < 102; i++){
         object.write_file(info);
     }
     
     std::cout << "Look -> ";
     std::cout << object << std::endl;
+    sys.close();
 }
 
 
