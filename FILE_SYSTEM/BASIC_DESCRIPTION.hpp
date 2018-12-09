@@ -214,6 +214,7 @@ struct ID{
         std::istream & read_time (std::istream &, tm * );
         friend std::ostream & operator << (std::ostream &, tm * );
         
+        
         //-----------------------------------------------------
         virtual int open();
         virtual bool close_file();
@@ -243,6 +244,7 @@ public:
     virtual bool close_file();
     virtual int open();
     
+     bool decrypt();
     
     virtual std::string get_status() const;
     

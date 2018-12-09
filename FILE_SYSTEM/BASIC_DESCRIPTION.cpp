@@ -327,10 +327,11 @@ int ProtectedDesfile::open(){
             out.str()[i] = out.str()[i] - gamma;
         }
             
-            reserve_shift = shift_stream;
-            ptr_stream->open_stream_for_file(shift_stream);
-            ptr_stream->push_stream(out.str(), shift_stream, size);
-            return 3;
+        reserve_shift = shift_stream;
+        ptr_stream = &temp;
+        ptr_stream->open_stream_for_file(shift_stream);
+        ptr_stream->push_stream(out.str(), shift_stream, size);
+        return 3;
         }
     else
         return 0;
@@ -548,19 +549,37 @@ bool Descatalog::decrypt_file(ID &key){
     if(p != struct_catalog.end()){
         ProtectedDesfile * ptr = dynamic_cast<ProtectedDesfile *>(p->second);
         if (ptr != nullptr){
-            std::ostringstream out;
-            out << *ptr;
-            //ptr->//get key decrypt
-            for (int i = 0; i != out.str().size(); ++i){
-                out.str()[i] = out.str()[i] - gamma;
-            }
-            ptr->delete_info();
-            // open new stream main and push out
-            
+            if(ptr->decrypt())
+                return true;
+            else
+                return false;
         }
+        else
+            return false;
     }
     else
         return false;
+}
+
+bool ProtectedDesfile::decrypt(){
+    std::map<const string, int>::iterator p = table_users_access.find(current_user);
+    if (p != table_users_access.end()){
+        std::ostringstream out;
+        out << ptr_stream->return_info(shift_stream, size);
+        
+        int gamma = p->second;
+        for (int i = 0; i != out.str().size(); ++i){
+            out.str()[i] = out.str()[i] - gamma;
+        }
+        
+        reserve_shift = shift_stream;
+        ptr_stream = &main_s;
+        ptr_stream->open_stream_for_file(shift_stream);
+        ptr_stream->push_stream(out.str(), shift_stream, size);
+        return 3;
+    }
+    else
+        return 0;
 }
 
 bool ProtectedDesfile::replace_user(const string &name, int &key)
