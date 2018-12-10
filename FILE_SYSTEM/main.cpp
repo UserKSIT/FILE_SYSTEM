@@ -12,6 +12,8 @@
 #include "DESCRIPTION_SYSTEM.hpp"
 #include "gtest/gtest.h"
 
+//fix check_acess in change table and next catalog
+//fix decrypt
 
 fstream sys;
 
@@ -119,7 +121,16 @@ int GetInfo(Descatalog *&view){
     if (!std::cin.good())
         throw std::invalid_argument("Error when a name was entered");
     
-    // to do
+    ID buf(name);
+    bool flag = false;
+    
+    map <ID, Basic_description *>::const_iterator p = view->find(buf, flag);
+    if (flag){
+        Desfile * ptr = dynamic_cast<Desfile *>(p->second);
+        std::cout << *ptr << std::endl;
+    }
+    else
+        std::cout << "Not found" << std::endl;
     
     return 0;
 }
@@ -211,28 +222,34 @@ int ShowT(Descatalog *&view){
 }
 
 int ChangeT(Descatalog *&object){
-    /*string id, mode, name;
+    string id, mode, name;
     std::cout << "Enter a name file: --> ";
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a id was entered");
-    if (check_master(name, *object)){
     
-    std::cout << "Enter a id: --> ";
-    std::cin >> id;
-    if (!std::cin.good())
-        throw std::invalid_argument("Error when a id was entered");
-    std::cout << "Enter a mode: --> ";
-    std::cin >> mode;
-    if (!std::cin.good())
-        throw std::invalid_argument("Error when a id was entered");
+    ID buf(name);
+    bool flag;
     
-    object->change_access(id, mode);
-    }
+    map<ID, Basic_description *>::const_iterator p = object->find(buf, flag);
+    if(!flag)
+        std::cout << "Not found" << std::endl;
     else{
-        std::cout << "You haven't master rule" << std::endl;
+        if(current_user == p->second->get_master()){
+            std::cout << "Enter a id: --> ";
+            std::cin >> id;
+            if (!std::cin.good())
+                throw std::invalid_argument("Error when a id was entered");
+            std::cout << "Enter a mode: --> ";
+            std::cin >> mode;
+            if (!std::cin.good())
+                throw std::invalid_argument("Error when a id was entered");
+    
+            object->change_access(id, mode);
+        }
+        else
+            std::cout << "You haven't master rule" << std::endl;
     }
-    */
     return 0;
 }
 
@@ -486,34 +503,17 @@ int main(int argc, char * argv[]) {
         std::cout << "Fatal error\n";
         return 0;
     }
-    sys.seekp(std::ios::beg);
-    std::cout << sys.tellp() << std::endl;
-
-/*    string ret, n, g;
-    //getline(sys, ret);
-    sys.seekp(std::ios::end);
-    sys << "zbs nigga\npizdec nahui blyat\n";
-    sys.seekg(std::ios::beg);
-    sys >> ret;
-    std::cout << ret << std::endl;
-    sys >> n;
-    std::cout << n << std::endl;
-    ret = ret + " " + n;
-    std::cout << ret << std::endl;
-    sys.seekg(12);
-    getline(sys, g, '\n');
-    std::cout << g << std::endl;
-    sys.close();
-    return 0;*/
     
     main_s.init_stream("MAIN");
     temp.init_stream("TEMP");
     sym.init_stream("SYMKEY");
     
-    //::testing::InitGoogleTest(&argc, argv);
-    //return RUN_ALL_TESTS();
-    Desp_sys SYSTEM("Yes");
- 
+    
+    
+//    ::testing::InitGoogleTest(&argc, argv);
+//    return RUN_ALL_TESTS();
+    
+    Desp_sys SYSTEM;
     int ind;
     try{
         while ((ind = Answer(Menu_start, NumWork)))
@@ -531,21 +531,91 @@ int main(int argc, char * argv[]) {
 }
 
 TEST(StreamFunction, PushInfo){
-    Desfile object;
-    object.open_stream();
+//    Desfile object;
     string info;
     std::cout << "Input info" << std::endl;
 
-    getline(cin, info);
+//    getline(cin, info);
 
-    for (int i = 0; i < 102; i++){
-        object.write_file(info);
-    }
+//    for (int i = 0; i < 102; i++){
+//        object.write_file(info);
+//    }
+    
+    std::cout << "Look -> ";
+//    std::cout << object << std::endl;
+}
+
+TEST(CatalogFunction, ReplaceObject){
+    Desp_sys test;
+    Descatalog * ptr = test.get_root();
+    
+    ID buf1("file1");
+    ID buf2("dir1");
+    
+    Desfile cont1("file1");
+    Descatalog cont2("dir1");
+    
+    Basic_description * p1 = &cont1;
+    Basic_description * p2 = &cont2;
+    
+    ptr->insert(buf1, p1);
+    ptr->insert(buf2,p2);
+    
+    ptr->pull_in_buffer(buf1, BUFFER_key, BUFFER_ptr);
+    
+    Descatalog * next = ptr->next(buf2);
+    
+    next->extract_out_buffer(BUFFER_key, BUFFER_ptr);
+}
+
+TEST(CatalogFunction, EncryptFile){
+    Desp_sys test;
+    Descatalog * ptr = test.get_root();
+    
+    ID buf("file1");
+    
+    Desfile cont("file1");
+    Basic_description * p = &cont;
+    
+    ptr->insert(buf, p);
+    
+    bool flag;
+    map<ID, Basic_description *>::const_iterator i = ptr->find(buf, flag);
+    Desfile * z = dynamic_cast<Desfile *>(i->second);
+    z->write_file("Hello world!");
+    
+    std::cout << *z << std::endl;
+    ptr->crypt_file(buf);
+    
+    map<ID, Basic_description *>::const_iterator j = ptr->find(buf, flag);
+    ProtectedDesfile * x = dynamic_cast<ProtectedDesfile *>(j->second);
+    std::cout << *x << std::endl;
+    
+    ptr->decrypt_file(buf);
+    
+    map<ID, Basic_description *>::const_iterator k = ptr->find(buf, flag);
+    Desfile * v = dynamic_cast<Desfile *>(k->second);
+    std::cout << *v << std::endl;
+}
+
+TEST(StreamFunction, AllFunction){
+    Desfile object;
+    string info;
+    std::cout << "Input info" << std::endl;
+    
+    getline(cin, info);
+    
+        for (int i = 0; i < 102; i++){
+            object.write_file(info);
+        }
     
     std::cout << "Look -> ";
     std::cout << object << std::endl;
-    sys.close();
+    
+    object.delete_info();
+    
+    std::cout << "Look -> ";
+    std::cout << object << std::endl;
 }
-
 
 

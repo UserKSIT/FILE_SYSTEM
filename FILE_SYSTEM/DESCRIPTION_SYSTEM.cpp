@@ -10,17 +10,14 @@
 
 using namespace std;
 
-Desp_sys::Desp_sys(const string & word){
-        if(word == "Yes"){
-            root = new Descatalog;
+Desp_sys::Desp_sys(){
+            root = new Descatalog("root");
             current_user = "";
             current_location = "root/";
             quantity_file = 0;
             quantity_catalog = 1;
             User object("ADMIN");
             this->insert_user("ADMIN", object);
-    }
-    
 }
 
 bool Desp_sys::check_in_table(const string &id){
@@ -36,6 +33,8 @@ bool Desp_sys::insert_user(const string &id, const User object){
     map<const string, User>::iterator p = table_users.find(id);
     if (p == table_users.end()){
         table_users.insert(make_pair(id, object));
+        
+        root->insert_access(id, "rw");
     }
     return res;
 }
@@ -45,6 +44,8 @@ bool Desp_sys::remove(const std::string &id){
     std::map<const std::string, User>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
         table_users.erase(iter);
+        
+        root->remove_access(id);
         res = true;
     }
     return res;
@@ -54,7 +55,11 @@ bool Desp_sys::change(const string &id, const User &object){
     bool res = false;
     std::map<const std::string, User>::iterator iter = table_users.find(id);
     if (iter != table_users.end()){
+        table_users.erase(iter);
         table_users.insert(make_pair(id, object));
+        
+        root->remove_access(id);
+        root->insert_access(id, "rw");
         res = true;
     }
     return res;

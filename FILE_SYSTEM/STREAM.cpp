@@ -21,7 +21,6 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
     
     int residue_block = size % block;
     
-    //std::ios::pos_type prev = 0;
     long int prev = 0;
     //string cur;
     long int cur = 0;
@@ -101,18 +100,20 @@ bool Desstream::delete_info(const std::ios::pos_type &shift, int &size){
     sys.seekp(0, std::ios::beg);
     sys.seekg(virtual_adress + shift);
     int quant = size / block;
+    int residue = size % block;
     char * next = new char[4];
+    char empty = 0;
     int tmp;
-    int empty = 0;
     
-    for (int i = 0; i <= quant; i++){
-        for (int i = 0; i < block; i++)
+    for (int i = 0; i < quant; i++){
+        for (int j = 0; j < block; j++)//may be for_each
             sys << empty;
-        //sys.write(0, block);
         sys.read(next, 4);
         tmp = Input(next, 4);
         sys.seekg(tmp);
     }
+    for (int j = 0; j < residue; j++)
+        sys << empty;
     delete [] next;
     return true;
 }
@@ -128,7 +129,7 @@ std::string Desstream::return_info(const std::ios::pos_type &shift, const int &s
     char * next = new char[4];
     int tmp;
     
-    for(int i = 0; i < quant; i++){
+    for(int i = 0; i < quant; i++){//may be for_each
         sys.read(buf, block);
         
         out << buf;

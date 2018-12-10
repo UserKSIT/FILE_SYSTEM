@@ -13,6 +13,7 @@
 		ACE3BBF4219B3E650087A3E9 /* STREAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ACE3BBF2219B3E650087A3E9 /* STREAM.cpp */; };
 		ACE3BBF7219B3E830087A3E9 /* BASIC_DESCRIPTION.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ACE3BBF5219B3E830087A3E9 /* BASIC_DESCRIPTION.cpp */; };
 		ACE4844A21B8482B00F7A225 /* mymap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ACE4844821B8482B00F7A225 /* mymap.cpp */; };
+		ACFE704E21BEC1B0006A1FE5 /* Crypt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ACFE704C21BEC1B0006A1FE5 /* Crypt.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,6 +42,8 @@
 		ACE3BBF6219B3E830087A3E9 /* BASIC_DESCRIPTION.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BASIC_DESCRIPTION.hpp; sourceTree = "<group>"; };
 		ACE4844821B8482B00F7A225 /* mymap.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mymap.cpp; sourceTree = "<group>"; };
 		ACE4844921B8482B00F7A225 /* mymap.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = mymap.hpp; sourceTree = "<group>"; };
+		ACFE704C21BEC1B0006A1FE5 /* Crypt.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Crypt.cpp; sourceTree = "<group>"; };
+		ACFE704D21BEC1B0006A1FE5 /* Crypt.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Crypt.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +87,8 @@
 				ACE3BBEC219B3D640087A3E9 /* USER.cpp */,
 				ACE3BBF2219B3E650087A3E9 /* STREAM.cpp */,
 				ACE3BBF5219B3E830087A3E9 /* BASIC_DESCRIPTION.cpp */,
+				ACFE704C21BEC1B0006A1FE5 /* Crypt.cpp */,
+				ACFE704D21BEC1B0006A1FE5 /* Crypt.hpp */,
 				AC4955542199F2DD002AF799 /* Products */,
 			);
 			path = FILE_SYSTEM;
@@ -147,6 +152,7 @@
 			files = (
 				ACE3BBEE219B3D640087A3E9 /* USER.cpp in Sources */,
 				AC4955572199F2DD002AF799 /* main.cpp in Sources */,
+				ACFE704E21BEC1B0006A1FE5 /* Crypt.cpp in Sources */,
 				ACE4844A21B8482B00F7A225 /* mymap.cpp in Sources */,
 				ACE3BBF4219B3E650087A3E9 /* STREAM.cpp in Sources */,
 				ACE3BBF7219B3E830087A3E9 /* BASIC_DESCRIPTION.cpp in Sources */,

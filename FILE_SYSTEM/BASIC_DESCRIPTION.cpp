@@ -111,9 +111,11 @@ bool Descatalog::change_name(const string &new_name, const ID &key){
     bool res = false;
     std::map<ID, Basic_description *>::iterator p = struct_catalog.find(key);
     if (p != struct_catalog.end()){
-        Basic_description * ptr = p->second;
+        Basic_description * ptr = p->second->clone();
         ID save_me = p->first;
-        replace(save_me, ptr);
+        save_me.name = new_name;
+        struct_catalog.erase(p);
+        insert(save_me, ptr);
         
         res = true;
     }
@@ -124,7 +126,7 @@ bool Descatalog::change_name(const string &new_name, const ID &key){
 //delete user in table access
 bool ProtectedDesfile::remove_user(const string &name){
     bool res = false;
-    std::map<const string, int>::iterator p = table_users_access.find(name);
+    std::map<const string, const string>::iterator p = table_users_access.find(name);
     if (p != table_users_access.end()){
         table_users_access.erase(p);
         res = true;
@@ -151,19 +153,19 @@ bool Descatalog::replace(ID &iden, const Basic_description *object)
 Descatalog * Descatalog::next(ID &iden){// to do
     std::map<ID, Basic_description *>::iterator p = struct_catalog.find(iden);
     if (p != struct_catalog.end()){
-        //if (check_access(name, "move")){
+        if (current_user == check_access(current_user)){
             Descatalog * ptr = dynamic_cast<Descatalog *>(p->second);
             current_location += iden.name;
             current_location += "/";
         return ptr;
-        //}
+        }
     }
     else
         std::cout << "Not found" << std::endl;
     return nullptr;
 }
 //back in previos catalog
-Descatalog * Descatalog::back(){//change?
+Descatalog * Descatalog::back(){
     if (parent != nullptr){
         long int sz1 = name.size();
         long int sz2 = current_location.size();
@@ -248,11 +250,11 @@ bool Basic_description::insert_access(const string &user, const string &mode){
     return res;
 }
 //insert in special table access for protected file
-bool ProtectedDesfile::insert_user(const string &user, int& key){
+bool ProtectedDesfile::insert_user(const string &user, const string& key){
     bool res = false;
-    std::map<const string, int>::iterator p = table_users_access.find(user);
+    std::map<const string, const string>::iterator p = table_users_access.find(user);
     if (p == table_users_access.end()){
-        std::pair<std::map<const string, int>::iterator, bool> pp =
+        std::pair<std::map<const string, const string>::iterator, bool> pp =
         table_users_access.insert(std::make_pair(user, key));
         if (!pp.second)
             throw std::ios_base::failure("can't insert new item into map");
@@ -317,20 +319,24 @@ int Desfile::open(){
 
 int ProtectedDesfile::open(){
     //check table_users_access
-    std::map<const string, int>::iterator p = table_users_access.find(current_user);
+    std::map<const string, const string>::iterator p = table_users_access.find(current_user);
     if (p != table_users_access.end()){
         std::ostringstream out;
         out << ptr_stream->return_info(shift_stream, size);
         
-        int gamma = p->second;
-        for (int i = 0; i != out.str().size(); ++i){
-            out.str()[i] = out.str()[i] - gamma;
-        }
-            
+        std::string info = out.str();
+        std::string key;
+        
+        TPasswordEncryptDecrypt enigma;
+        
+        info = enigma.decryptMe(info, key);
+        
+        ptr_stream->delete_info(shift_stream, size);
+        
         reserve_shift = shift_stream;
         ptr_stream = &temp;
         ptr_stream->open_stream_for_file(shift_stream);
-        ptr_stream->push_stream(out.str(), shift_stream, size);
+        ptr_stream->push_stream(info, shift_stream, size);
         return 3;
         }
     else
@@ -367,17 +373,17 @@ bool ProtectedDesfile::close_file(){
         
         out << ptr_stream->return_info(shift_stream, size);
         
-        unsigned rand_value = 11;
-        srand(rand_value);
+        std::string info = out.str();
+        std::string key;
         
-        int gamma = rand();
+        TPasswordEncryptDecrypt enigma;
         
-        for (int i = 0; i != out.str().size(); i++){
-            out.str()[i] = out.str()[i] + gamma;
-        }
+        info = enigma.encryptMe(info, key);
             
         ptr_stream->delete_info(shift_stream, size);
         shift_stream = reserve_shift;
+        ptr_stream = &sym;
+        ptr_stream->push_stream(info, shift_stream, size);
         return true;
     }
     else{
@@ -391,8 +397,8 @@ void Desfile::write_file(const string &info){
 }
 
 
-std::string Basic_description::check_access(const string &id){
-    std::map<const string, const string>::iterator p = access_user.find(id);
+std::string Basic_description::check_access(const string &id) const{
+    std::map<const string, const string>::const_iterator p = access_user.find(id);
     if (p != access_user.end())
         return p->second;
     else
@@ -506,24 +512,25 @@ bool Descatalog::crypt_file(ID &key){
                 
                 out << *ptr;
                 
-                unsigned rand_value = 11;
-                srand(rand_value);
+                std::string info = out.str();
+                std::string key;
+    
+                TPasswordEncryptDecrypt enigma;
+                info = enigma.encryptMe(info, key);
+
+                std::cout << info << std::endl;
                 
-                int gamma = rand();
-                
-                
-                for (int i = 0; i != out.str().size(); i++){
-                    out.str()[i] = out.str()[i] + gamma;
-                }
-                if(ptr->delete_info())
-                    std::cout << "Ok" << std::endl;
+                ptr->delete_info();
+                std::cout << "Ok" << std::endl;
                 
                 
                 ProtectedDesfile crypt_f(p->first.name);
-                if(!crypt_f.replace_user(current_user, gamma)){
+                int sz = info.size();
+                crypt_f.set_size(sz);
+                if(!crypt_f.replace_user(current_user, key)){
                     throw std::invalid_argument("Incorrect access");
                 }
-                crypt_f.write_file(out.str());
+                crypt_f.write_file(info);
                 
                 
                 
@@ -549,8 +556,39 @@ bool Descatalog::decrypt_file(ID &key){
     if(p != struct_catalog.end()){
         ProtectedDesfile * ptr = dynamic_cast<ProtectedDesfile *>(p->second);
         if (ptr != nullptr){
-            if(ptr->decrypt())
+            if (current_user == ptr->get_master()){
+                std::ostringstream out;
+                
+                out << *ptr;
+                
+                std::string info = out.str();
+                std::string key = ptr->get_key();
+                
+                TPasswordEncryptDecrypt enigma;
+                info = enigma.decryptMe(info, key);
+                
+                std::cout << info << std::endl;
+                
+                ptr->delete_info();
+                std::cout << "Ok" << std::endl;
+                
+                
+                Desfile decrypt_f(p->first.name);
+                int sz = info.size();
+                
+                decrypt_f.set_size(sz);
+                
+                decrypt_f.write_file(info);
+                
+                
+                
+                Basic_description * ptr = &decrypt_f;
+                ID buf(p->first.name);
+                buf.location = p->first.location;
+                buf.virtual_adress = p->first.virtual_adress;
+                replace(buf, ptr);
                 return true;
+            }
             else
                 return false;
         }
@@ -562,30 +600,38 @@ bool Descatalog::decrypt_file(ID &key){
 }
 
 bool ProtectedDesfile::decrypt(){
-    std::map<const string, int>::iterator p = table_users_access.find(current_user);
+    std::map<const string, const string>::iterator p = table_users_access.find(current_user);
     if (p != table_users_access.end()){
         std::ostringstream out;
         out << ptr_stream->return_info(shift_stream, size);
         
-        int gamma = p->second;
-        for (int i = 0; i != out.str().size(); ++i){
-            out.str()[i] = out.str()[i] - gamma;
-        }
+        std::cout << out.str() << std::endl;
         
-        reserve_shift = shift_stream;
+        TPasswordEncryptDecrypt enigma;
+        
+        std::string info = out.str();
+        std::string key = p->second;
+        
+        info = enigma.decryptMe(info, key);
+        
+        ptr_stream->delete_info(shift_stream, size);
+        
         ptr_stream = &main_s;
-        ptr_stream->open_stream_for_file(shift_stream);
-        ptr_stream->push_stream(out.str(), shift_stream, size);
+        shift_stream = reserve_shift;
+        Desfile dec(name);
+        size = info.size();
+        
+        ptr_stream->push_stream(info, shift_stream, size);
         return 3;
     }
     else
         return 0;
 }
 
-bool ProtectedDesfile::replace_user(const string &name, int &key)
+bool ProtectedDesfile::replace_user(const string &name, const string &key)
 {
     bool res = false;
-    std::map<const string, int>::iterator p = table_users_access.find(name);
+    std::map<const string, const string>::iterator p = table_users_access.find(name);
     if (p != table_users_access.end()){
         table_users_access.erase(p);
         table_users_access.insert(std::make_pair(name, key));
@@ -642,7 +688,8 @@ bool Descatalog::pull_in_buffer(ID &key, ID &BUFFER_key, Basic_description *& BU
     map<ID, Basic_description *>::iterator p = struct_catalog.find(key);
     if (p != struct_catalog.end()){
         BUFFER_key = p->first;
-        BUFFER_ptr = p->second;
+        BUFFER_ptr = p->second->clone();
+        
         return true;
     }
     else{
@@ -654,8 +701,11 @@ bool Descatalog::pull_in_buffer(ID &key, ID &BUFFER_key, Basic_description *& BU
 bool Descatalog::extract_out_buffer(ID &BUFFER_key, Basic_description *& BUFFER_ptr){
     if (!BUFFER_key.empty() && BUFFER_ptr != nullptr){
         this->insert(BUFFER_key, BUFFER_ptr);
+        
         BUFFER_key.clear();
+        delete BUFFER_ptr;
         BUFFER_ptr = nullptr;
+        
         return true;
     }
     else
@@ -707,7 +757,7 @@ std::istream& ProtectedDesfile::read(std::istream& istr){
     long int buf;
     istr >> buf;
     shift_stream = buf;
-    read_table_access_pf(istr, table_users_access);
+    //read_table_access_user(istr, table_users_access);
     return istr;
 }
 //write time info
@@ -873,5 +923,35 @@ std::ostream& operator << (std::ostream& ostr, set<const string> &table){
     }
     return ostr;
 }
+
+std::string ProtectedDesfile::get_key(){
+    std::map<const string, const string>::iterator p = table_users_access.find(current_user);
+    if (p != table_users_access.end())
+        return p->second;
+    else
+        return "";
+}
+
+void ProtectedDesfile::set_key(const string &key){
+    std::map<const string, const string>::iterator p = table_users_access.find(current_user);
+    if (p != table_users_access.end()){
+        table_users_access.erase(p);
+        table_users_access.insert(std::make_pair(current_user, key));
+    }
+    return;
+}
+
+bool Basic_description::remove_access(const string &name){
+    bool res = false;
+    std::map<const string, const string>::iterator p = access_user.find(name);
+    if (p != access_user.end()){
+        access_user.erase(p);
+        res = true;
+    }
+    else
+        std::cout << "Not found" << std::endl;
+    return res;
+}
+
 
 

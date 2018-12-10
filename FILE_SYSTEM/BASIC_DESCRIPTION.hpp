@@ -11,6 +11,7 @@
 
 #include "STREAM.hpp"
 #include "USER.hpp"
+#include "Crypt.hpp"
 #include <ctime>
 #include <map>
 #include <vector>
@@ -76,7 +77,8 @@ struct ID{
         Basic_description& operator = (const Basic_description &);
  
         bool insert_access(const string &, const string &);
-        std::string check_access(const string &);
+        bool remove_access(const string &);
+        std::string check_access(const string &) const;
         void change_access(const string &, const string &);
         std::string show_access() const;
         
@@ -90,6 +92,7 @@ struct ID{
         
         virtual std::ostream & write(std::ostream&) = 0;
         virtual std::istream & read(std::istream&) = 0;
+        virtual std::string get_master() const = 0;
     
         friend std::istream& operator >> (std::istream&, map<const string, const string> &);
         friend std::ostream& operator << (std::ostream&, map<const string, const string> &);
@@ -110,7 +113,7 @@ struct ID{
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(const string & name = "no name"): parent(nullptr){this->insert_access(current_user, "move"); size = sizeof(*this); this->name = name;}// to do
+        Descatalog(const string & name = "no name"): parent(nullptr){if (current_user != ""){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = sizeof(*this); this->name = name;}// to do
         
 
         Descatalog(const Descatalog &);
@@ -155,12 +158,12 @@ struct ID{
         virtual std::ostream & write(std::ostream&);
         virtual std::istream & read(std::istream&);
         
+        virtual std::string get_master() const {return check_access(current_user);}
+        
         virtual int open(){return 0;}
         virtual bool close_file(){return false;}
         
         std::string show_access(const ID &) const;
-        
-        
         
         
         friend std::istream& operator >> (std::istream&, Descatalog &);
@@ -186,7 +189,7 @@ struct ID{
         //print info file
         virtual std::ostream & print(std::ostream &) const;
     public:
-        Desfile(const string & name = "no name"):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); this->insert_access(current_user, "rw"); size = 0; this->name = name;};
+        Desfile(const string & name = "no name"):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); if (current_user != ""){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = 0; this->name = name;};
         
         Desfile(const Desfile &);
        
@@ -206,7 +209,7 @@ struct ID{
         
         virtual std::string get_status() const;
   
-        std::string get_master() const {return master;}
+        virtual std::string get_master() const {return master;}
         
         virtual std::ostream & write(std::ostream&);
         virtual std::istream & read(std::istream&);
@@ -225,26 +228,31 @@ struct ID{
 
 class ProtectedDesfile: public Desfile{
 private:
-    map<const string, int> table_users_access;
+    map<const string, const string> table_users_access;
     long int reserve_shift;
     virtual std::ostream & print(std::ostream &) const;
 public:
-    ProtectedDesfile(const string &name = "", int  key = 0): Desfile(name), reserve_shift(0){this->insert_user(current_user, key);ptr_stream = &sym;}
+    ProtectedDesfile(const string &name = "", const string key = ""): Desfile(name), reserve_shift(0){this->insert_user(current_user, key);ptr_stream = &sym;}
     
     virtual ProtectedDesfile * clone() const {
         return new ProtectedDesfile(*this);
     }
     
-    bool insert_user(const string &, int &);
+    bool insert_user(const string &, const string &);
     bool remove_user(const string &);
     
-    bool replace_user(const string &, int &);
+    virtual std::string get_master() const {return master;}
+    
+    bool replace_user(const string &, const string &);
+    
+    std::string get_key();
+    void set_key(const string &);
     
     
     virtual bool close_file();
     virtual int open();
     
-     bool decrypt();
+    bool decrypt();
     
     virtual std::string get_status() const;
     
