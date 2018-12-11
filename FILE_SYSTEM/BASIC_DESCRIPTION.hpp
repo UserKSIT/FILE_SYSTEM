@@ -79,7 +79,7 @@ struct ID{
         bool insert_access(const string &, const string &);
         bool remove_access(const string &);
         std::string check_access(const string &) const;
-        void change_access(const string &, const string &);
+        bool change_access(const string &, const string &);
         std::string show_access() const;
         
         
@@ -105,7 +105,6 @@ struct ID{
     //Class description directory. Include in itself struct catalog - table containing file and subdirectory
     class Descatalog: public Basic_description{
     private:
-        //add name
         //table containing file and subdirectory
         map <ID, Basic_description *> struct_catalog;
         //print info table
@@ -113,7 +112,7 @@ struct ID{
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(const string & name = "no name"): parent(nullptr){if (current_user != ""){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = sizeof(*this); this->name = name;}// to do
+        Descatalog(const string & name = "no name"): parent(nullptr){if (current_user != "" && current_user != "ADMIN"){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = sizeof(*this); this->name = name;}// to do
         
 
         Descatalog(const Descatalog &);
@@ -163,8 +162,6 @@ struct ID{
         virtual int open(){return 0;}
         virtual bool close_file(){return false;}
         
-        std::string show_access(const ID &) const;
-        
         
         friend std::istream& operator >> (std::istream&, Descatalog &);
 
@@ -189,7 +186,7 @@ struct ID{
         //print info file
         virtual std::ostream & print(std::ostream &) const;
     public:
-        Desfile(const string & name = "no name"):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); if (current_user != ""){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = 0; this->name = name;};
+        Desfile(const string & name = "no name"):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); if (current_user != "" && current_user != "ADMIN")/*just for test*/{insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = 0; this->name = name;};
         
         Desfile(const Desfile &);
        

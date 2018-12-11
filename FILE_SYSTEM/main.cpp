@@ -12,9 +12,11 @@
 #include "DESCRIPTION_SYSTEM.hpp"
 #include "gtest/gtest.h"
 
-//fix check_acess in change table and next catalog
 //fix decrypt
-
+//set table_user_access
+//push now in crypt and decrypt
+//change get status for this
+//problem in descrypt and output info
 fstream sys;
 
 string current_user;
@@ -22,9 +24,11 @@ string current_location;
 
 int tag = 0;
 
-Desstream main_s;
-Desstream temp;
-Desstream sym;
+Desstream main_s("MAIN");
+Desstream temp("TEMP");
+Desstream sym("SYMKEY");
+
+
 
 Basic_description * BUFFER_ptr;
 ID BUFFER_key;
@@ -86,6 +90,7 @@ const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
 
 int Decrypt(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a name object: --> ";
     std::cin >> name;
@@ -101,6 +106,7 @@ int Decrypt(Descatalog *&view){
 
 
 int Encrypt(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a name object: --> ";
     std::cin >> name;
@@ -115,6 +121,7 @@ int Encrypt(Descatalog *&view){
 
 
 int GetInfo(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a name object: --> ";
     std::cin >> name;
@@ -136,6 +143,7 @@ int GetInfo(Descatalog *&view){
 }
 
 int Copy(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a name object: --> ";
     std::cin >> name;
@@ -157,6 +165,7 @@ int Extract(Descatalog *&view){
 }
 
 int Pull(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a name object: --> ";
     std::cin >> name;
@@ -170,12 +179,14 @@ int Pull(Descatalog *&view){
 }
 
 int ChangeName(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a name object: --> ";
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a name was entered");
     
+    std::cin.clear();
     std::string new_name;
     std::cout << "Enter a new name object: --> ";
     std::cin >> new_name;
@@ -190,6 +201,7 @@ int ChangeName(Descatalog *&view){
 
 
 int Status(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a name object: --> ";
     std::cin >> name;
@@ -208,48 +220,54 @@ int Status(Descatalog *&view){
     return 0;
 }
 int ShowT(Descatalog *&view){
-    std::string name;
-    std::cout << "Enter a name object: --> ";
-    std::cin >> name;
-    if (!std::cin.good())
-        throw std::invalid_argument("Error when a name was entered");
-    
-    
-    ID buf(name);
-    
-    std::cout << view->show_access(buf) << std::endl;
+    std::cout << view->show_access() << std::endl;
     return 0;
 }
 
-int ChangeT(Descatalog *&object){
-    string id, mode, name;
-    std::cout << "Enter a name file: --> ";
-    std::cin >> name;
-    if (!std::cin.good())
-        throw std::invalid_argument("Error when a id was entered");
-    
-    ID buf(name);
-    bool flag;
-    
-    map<ID, Basic_description *>::const_iterator p = object->find(buf, flag);
-    if(!flag)
-        std::cout << "Not found" << std::endl;
-    else{
-        if(current_user == p->second->get_master()){
-            std::cout << "Enter a id: --> ";
-            std::cin >> id;
-            if (!std::cin.good())
-                throw std::invalid_argument("Error when a id was entered");
-            std::cout << "Enter a mode: --> ";
-            std::cin >> mode;
-            if (!std::cin.good())
-                throw std::invalid_argument("Error when a id was entered");
-    
-            object->change_access(id, mode);
+int ChangeT(Descatalog *&object){//add menu
+    if("rw" == object->get_master()){
+        int choice;
+        std::string id, mode;
+        std::cout << "1. Add (if such already exists will be replaced) user" <<std::endl;
+        std::cout << "2. Remove user" << std::endl;
+        ltmp::GET_NUM_CHOICE(choice, 2);
+        switch (choice) {
+            case 1:{
+                std::cin.clear();
+                std::cout << "Enter a id: --> ";
+                std::cin >> id;
+                if (!std::cin.good())
+                    throw std::invalid_argument("Error when a id was entered");
+               
+                
+                bool loop = true;
+                while (loop){
+                    std::cout << "Enter a mode: --> ";
+                    std::cin >> mode;
+                    if (!std::cin.good())
+                        throw std::invalid_argument("Error when a id was entered");
+                    if (mode == "rw" || mode == "r" || mode == "w")
+                        loop = false;
+                    else
+                        std::cout << "Exist only \"r\" \"w\" \"rw\"" << std::endl;
+                }
+                object->change_access(id, mode);}
+                break;
+            case 2:
+                std::cin.clear();
+                std::cout << "Enter a id: --> ";
+                std::cin >> id;
+                if (!std::cin.good())
+                    throw std::invalid_argument("Error when a id was entered");
+                
+                object->remove_access(id);
+                break;
+            default:
+                break;
         }
-        else
-            std::cout << "You haven't master rule" << std::endl;
     }
+    else
+        std::cout << "You haven't master rule" << std::endl;
     return 0;
 }
 
@@ -261,6 +279,7 @@ int Get_status(Desp_sys &object){
 }
 
 int Change_Table(Desp_sys &object){
+    std::cin.clear();
     std::string user;
     std::cout << "Enter a id: --> ";
     std::cin >> user;
@@ -285,14 +304,16 @@ int Change_Table(Desp_sys &object){
                 std::cin >> name;
                 User tmp(name);
                 std::cin.clear();
+                
                 object.insert_user(id, tmp);
                 break;
             }
             case 2:{
                 string id;
+                std::cin.clear();
                 std::cout << "Id = ";
                 std::cin >> id;
-                std::cin.clear();
+        
                 object.remove(id);
                 break;
             }
@@ -309,6 +330,7 @@ int Change_Table(Desp_sys &object){
 }
 
 int Work(Desp_sys &object){
+    std::cin.clear();
     std::string user;
     std::cout << "Enter a id: --> ";
     std::cin >> user;
@@ -337,12 +359,11 @@ int Work(Desp_sys &object){
         std::cout << "This user is not foun in the table" << std::endl;
     
     object.end_work();
-    
-    std::cin.clear();
     return 0;
 }
 
 int Write(Desfile *object){
+    std::cin.clear();
     string info;
     std::cout << "Input info" << std::endl;
     getline(cin, info);
@@ -351,8 +372,6 @@ int Write(Desfile *object){
     
     
     object->write_file(info);
-    
-    std::cin.clear();
     
     return 0;
 }
@@ -367,6 +386,7 @@ int Read(Desfile *object){
 
 int Add(Descatalog *&view)
 {
+    std::cin.clear();
     string id;
     std::cout << "Enter name object" << std::endl;
     std::cin >> id;
@@ -380,6 +400,7 @@ int Add(Descatalog *&view)
 }
 int Find(Descatalog *&view)
 {
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
@@ -398,6 +419,7 @@ int Find(Descatalog *&view)
 }
 int Remove(Descatalog *&view)
 {
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
@@ -420,6 +442,7 @@ int ShowAll(Descatalog *&view){
 }
 
 int NextC(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
@@ -440,6 +463,7 @@ int NextC(Descatalog *&view){
 }
 
 int OpenF(Descatalog *&view){
+    std::cin.clear();
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
@@ -450,6 +474,7 @@ int OpenF(Descatalog *&view){
     buf.name = name;
     Basic_description * Bptr = view->open_file(buf, res);
     int ind;
+    std::cin.clear();
     if (res > 0){
         Desfile * ptr = dynamic_cast<Desfile *>(Bptr);
         if (res == 1){
@@ -483,7 +508,7 @@ int OpenF(Descatalog *&view){
     
     return 0;
 }
-// to do
+
 int BackC(Descatalog *& view){
     Descatalog * parent = view->back();
     if(parent != nullptr){
@@ -531,21 +556,48 @@ int main(int argc, char * argv[]) {
 }
 
 TEST(StreamFunction, PushInfo){
-//    Desfile object;
-    string info;
-    std::cout << "Input info" << std::endl;
+    Desfile object;
+    object.open_stream();
+    string info = "Hello world!";
 
-//    getline(cin, info);
+    for (int i = 0; i < 10; i++)
+        object.write_file(info);
 
-//    for (int i = 0; i < 102; i++){
-//        object.write_file(info);
-//    }
+    std::cout << "Look -> ";
+    std::cout << object << std::endl;
+}
+
+TEST(StreamFunction, ReturnInfo){
+    Desfile object;
+    object.open_stream();
+    string info = "Hello world!";
+    
+    for (int i = 0; i < 10; i++)
+        object.write_file(info);
     
     std::cout << "Look -> ";
-//    std::cout << object << std::endl;
+    std::cout << object << std::endl;
+}
+
+TEST(StreamFunction, DeleteInfo){
+    Desfile object;
+    object.open_stream();
+    string info = "Hello world!";
+    
+    for (int i = 0; i < 10; i++)
+        object.write_file(info);
+    
+    std::cout << "Look before delete-> ";
+    std::cout << object << std::endl;
+    
+    object.delete_info();
+    
+    std::cout << "Look after delete-> ";
+    std::cout << object << std::endl;
 }
 
 TEST(CatalogFunction, ReplaceObject){
+    current_user = "ADMIN";
     Desp_sys test;
     Descatalog * ptr = test.get_root();
     
@@ -561,11 +613,23 @@ TEST(CatalogFunction, ReplaceObject){
     ptr->insert(buf1, p1);
     ptr->insert(buf2,p2);
     
+    std::cout << "Look what in catalog before" << std::endl;
+    std::cout << *ptr << std::endl;
     ptr->pull_in_buffer(buf1, BUFFER_key, BUFFER_ptr);
+    ptr->remove(buf1);
+    std::cout << "Look what in catalog after" << std::endl;
+    std::cout << *ptr << std::endl;
     
     Descatalog * next = ptr->next(buf2);
+    ptr = next;
     
+    //Call except, but it's normal
+    /*std::cout << "Look what in catalog before" << std::endl;
+    std::cout << *ptr << std::endl;
     next->extract_out_buffer(BUFFER_key, BUFFER_ptr);
+    std::cout << "Look what in catalog after" << std::endl;
+    std::cout << *ptr << std::endl;
+    current_user = "";*/
 }
 
 TEST(CatalogFunction, EncryptFile){
@@ -598,24 +662,94 @@ TEST(CatalogFunction, EncryptFile){
     std::cout << *v << std::endl;
 }
 
-TEST(StreamFunction, AllFunction){
-    Desfile object;
-    string info;
-    std::cout << "Input info" << std::endl;
+TEST(AccessTable, InsertUser){
+    Desfile file;
+    Descatalog catalog;
     
-    getline(cin, info);
+    std::string id = "guest";
+    std::string mode = "rw";
+    std::string mode2 = "r";
     
-        for (int i = 0; i < 102; i++){
-            object.write_file(info);
-        }
+    file.insert_access(id, mode);
+    catalog.insert_access(id, mode);
     
-    std::cout << "Look -> ";
-    std::cout << object << std::endl;
+    std::cout << "Look what in file" << std::endl;
+    file.show_access();
+    std::cout << "Look what in catalog" << std::endl;
+    catalog.show_access();
     
-    object.delete_info();
+    std::cout << "Try replace" << std::endl;
+    file.insert_access(id, mode2);
+    catalog.insert_access(id, mode2);
     
-    std::cout << "Look -> ";
-    std::cout << object << std::endl;
+    std::cout << "Look what in file" << std::endl;
+    file.show_access();
+    std::cout << "Look what in catalog" << std::endl;
+    catalog.show_access();
 }
 
+TEST(AccessTable, RemoveUser){
+    Desfile file;
+    Descatalog catalog;
+    
+    std::string id = "guest";
+    std::string mode = "rw";
+    
+    file.insert_access(id, mode);
+    catalog.insert_access(id, mode);
+    
+    std::cout << "Before delete" << std::endl;
+    std::cout << "Look what in file" << std::endl;
+    file.show_access();
+    std::cout << "Look what in catalog" << std::endl;
+    catalog.show_access();
+    
+    std::cout << "Try change ADMIN" << std::endl;
+    ASSERT_FALSE(file.change_access("ADMIN", "w"));
+    ASSERT_FALSE(catalog.change_access("ADMIN", "w"));
+    std::cout << "Try delete ADMIN" << std::endl;
+    ASSERT_FALSE(file.remove_access("ADMIN"));
+    ASSERT_FALSE(catalog.remove_access("ADMIN"));
+    
+    ASSERT_TRUE(file.remove_access(id));
+    ASSERT_TRUE(catalog.remove_access(id));
+    
+    std::cout << "After delete" << std::endl;
+    std::cout << "Look what in file" << std::endl;
+    file.show_access();
+    std::cout << "Look what in catalog" << std::endl;
+    catalog.show_access();
+    
+    std::cout << "Try again" << std::endl;
+    ASSERT_FALSE(file.remove_access(id));
+    ASSERT_FALSE(catalog.remove_access(id));
+}
+
+TEST(OpenFile, ProtectedOpen){
+    Desp_sys s;
+    Descatalog catalog = *s.get_root();
+    Desfile file("file");
+    
+    Basic_description * ptr = &file;
+    
+    ID buf("file");
+    catalog.insert(buf, ptr);
+    
+    std::string push = "Hello world!";
+    file.write_file(push);
+    
+    catalog.crypt_file(buf);
+    
+    bool flag;
+    map<ID, Basic_description *>::const_iterator p = catalog.find(buf, flag);
+    ProtectedDesfile * pfile = dynamic_cast<ProtectedDesfile *>(p->second);
+    
+    std::cout << "Before -> " << *pfile << std::endl;
+    
+    pfile->open();
+    
+    std::cout << "After -> " << *pfile << std::endl;
+    
+    pfile->close_file();
+}
 

@@ -17,7 +17,7 @@ Desp_sys::Desp_sys(){
             quantity_file = 0;
             quantity_catalog = 1;
             User object("ADMIN");
-            this->insert_user("ADMIN", object);
+            insert_user("ADMIN", object);
 }
 
 bool Desp_sys::check_in_table(const string &id){
@@ -33,8 +33,8 @@ bool Desp_sys::insert_user(const string &id, const User object){
     map<const string, User>::iterator p = table_users.find(id);
     if (p == table_users.end()){
         table_users.insert(make_pair(id, object));
-        
-        root->insert_access(id, "rw");
+        if (id != "ADMIN")
+            root->insert_access(id, "rw");
     }
     return res;
 }
