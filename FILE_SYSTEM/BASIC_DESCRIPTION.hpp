@@ -94,6 +94,8 @@ struct ID{
         virtual std::istream & read(std::istream&) = 0;
         virtual std::string get_master() const = 0;
     
+        virtual void write_file(const string &) = 0;
+        
         friend std::istream& operator >> (std::istream&, map<const string, const string> &);
         friend std::ostream& operator << (std::ostream&, map<const string, const string> &);
         
@@ -112,65 +114,77 @@ struct ID{
         //pointer to parent directory
         Descatalog * parent;
     public:
-        Descatalog(const string & name = "no name"): parent(nullptr){if (current_user != "" && current_user != "ADMIN"){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = sizeof(*this); this->name = name;}// to do
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //base constructor catalog
+        Descatalog(const string & name = "no name"): parent(nullptr){if (current_user != "" && current_user != "ADMIN"){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = sizeof(*this); this->name = name;}
         
-
+        //copy constructor
         Descatalog(const Descatalog &);
+        Descatalog& operator = (const Descatalog &);
         
+        //release map
         ~Descatalog();
         
+        //make clone for insert in struct catalog
         virtual Descatalog * clone() const {
             return new Descatalog(*this);
         }
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
         
-        Descatalog & set_parent(Descatalog *);
-        
-        Descatalog& operator = (const Descatalog &);
-        //вставка файла или подкатолога
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //function for filling catalog
+        //function add object - file or catalog. In this place user make choice - file or catalog will be insert
+        Descatalog * add_object(const string &);
+        //insert file or catalog
         bool insert(ID &, const Basic_description *);
-        //delete object in catalog
+        
+        //delete object in catalog (file or catalog)
         bool remove(ID &);
+        
         //change object in catalog
         bool replace(ID &, const Basic_description *);
         
+        //change name object
         bool change_name(const string &, const ID &);
         
+        //function for make secure file
         bool crypt_file(ID &);
         bool decrypt_file(ID &);
-        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //move in tree catalog
         Descatalog * next(ID &);
         Descatalog * back();
-        //function add object - file or catalog
-        Descatalog * add_object(const string &);
-        
-        Basic_description * open_file(ID &, int &);
-        
+        Descatalog & set_parent(Descatalog *);
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //find object in map catalog
         map <ID, Basic_description *>::const_iterator find(ID &, bool &) const;
-        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //return info about file
         virtual std::string get_status() const;
-        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //function put and extract object. It necessary for copy and moving object
         bool pull_in_buffer(ID &, ID &, Basic_description *&);
         bool extract_out_buffer(ID &, Basic_description *&);
-        
-        //function delete object - file or catalog
-        
-        virtual std::ostream & write(std::ostream&);
-        virtual std::istream & read(std::istream&);
-        
-        virtual std::string get_master() const {return check_access(current_user);}
-        
-        virtual int open(){return 0;}
-        virtual bool close_file(){return false;}
-        
-        
-        friend std::istream& operator >> (std::istream&, Descatalog &);
-
-        //Des search(const string &) const;
-        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //print content catalog
         friend std::ostream & operator << (std::ostream &flow, const Descatalog &object){return object.print(flow);}
         
+        //input? Check necessary
+        friend std::istream& operator >> (std::istream&, Descatalog &);
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //waste (because catalog and file inherit from "Basic_description"
+        Basic_description * open_file(ID &, int &);
+        virtual std::ostream & write(std::ostream&);
+        virtual std::istream & read(std::istream&);
+        virtual void write_file(const string &) {return;}
+        virtual bool close_file(){return false;}
+        virtual std::string get_master() const {return check_access(current_user);}
+        virtual int open(){return 0;}
         //std::ostream& write(std::ostream& ostr, Descatalog const& pr);
         //std::istream& read(std::istream& istr, Descatalog const& pr);
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
     };
     //Description file
     class Desfile: public Basic_description{
@@ -186,41 +200,48 @@ struct ID{
         //print info file
         virtual std::ostream & print(std::ostream &) const;
     public:
-        Desfile(const string & name = "no name"):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); if (current_user != "" && current_user != "ADMIN")/*just for test*/{insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = 0; this->name = name;};
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //constructor file (it doesn't have data stream).
+        Desfile(const string & name = "no name"):master(current_user){ptr_stream = &main_s; shift_stream = 0; time_t t = time(0); timeinfo = localtime(&t); if (current_user != "" && current_user != "ADMIN"){insert_access(current_user, "rw");} insert_access("ADMIN", "rw");size = 0; this->name = name;};
         
+        //copy constructor in this place open data stream
         Desfile(const Desfile &);
-       
-        
         Desfile& operator = (const Desfile &);
         
-        
+        //make clone for insert in struct catalog
         virtual Desfile * clone() const {
             return new Desfile(*this);
         }
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
         
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //support function for stream (check necessary)
         Desfile & open_stream();
-        
         Desstream * get_stream() const {return ptr_stream;}
-        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
         bool delete_info(){if (ptr_stream->delete_info(shift_stream, size)){return true;}else{return false;}}
-        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //get function
+        //return info about file
         virtual std::string get_status() const;
-  
         virtual std::string get_master() const {return master;}
-        
-        virtual std::ostream & write(std::ostream&);
-        virtual std::istream & read(std::istream&);
-        
-        std::istream & read_time (std::istream &, tm * );
-        friend std::ostream & operator << (std::ostream &, tm * );
-        
-        
-        //-----------------------------------------------------
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //base function for work with file
         virtual int open();
         virtual bool close_file();
-        void write_file(const string &);
+        virtual void write_file(const string &);
+        
+        //return data contain in stream
         friend std::ostream & operator << (std::ostream &flow, Desfile &object){return object.print(flow);}
-        //----------------------------------------------------
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //waste function (check necessary)
+        virtual std::ostream & write(std::ostream&);
+        virtual std::istream & read(std::istream&);
+        std::istream & read_time (std::istream &, tm * );
+        friend std::ostream & operator << (std::ostream &, tm * );
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
     };
 
 class ProtectedDesfile: public Desfile{
@@ -256,6 +277,8 @@ public:
     //work with file
     virtual std::ostream & write(std::ostream&);
     virtual std::istream & read(std::istream&);
+    
+    virtual void write_file(const string &);
     
     friend std::ostream& operator << (std::ostream&, set<const string> &);
     

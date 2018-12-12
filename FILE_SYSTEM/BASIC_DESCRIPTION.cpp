@@ -323,6 +323,8 @@ int ProtectedDesfile::open(){
         std::string info = ptr_stream->return_info(shift_stream, size);
         std::string key;
         
+        std::cout << info.substr(0, info.size() - 1) << std::endl;
+        
         TPasswordEncryptDecrypt enigma;
         std::cout << "Before -> " << info << std::endl;
         info = enigma.decryptMe(info, key);
@@ -389,6 +391,9 @@ bool ProtectedDesfile::close_file(){
 }
 
 void Desfile::write_file(const string &info){
+    ptr_stream->push_stream(info, shift_stream, size);
+}
+void ProtectedDesfile::write_file(const string &info){
     ptr_stream->push_stream(info, shift_stream, size);
 }
 

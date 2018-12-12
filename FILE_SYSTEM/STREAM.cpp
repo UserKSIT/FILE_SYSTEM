@@ -110,6 +110,7 @@ bool Desstream::delete_info(const std::ios::pos_type &shift, int &size){
 }
 //вывод информации
 std::string Desstream::return_info(const std::ios::pos_type &shift, const int &size) const {
+    std::cout << "Shift in return info " << shift << std::endl;
     std::ostringstream out;
     sys.seekg(0, std::ios::beg);
     sys.seekg(virtual_adress + shift);

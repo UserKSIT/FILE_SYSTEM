@@ -462,7 +462,7 @@ int NextC(Descatalog *&view){
     return 0;
 }
 
-int OpenF(Descatalog *&view){
+int OpenF(Descatalog *&view){//change read and write on virtual
     std::cin.clear();
     std::string name;
     std::cout << "Enter a object name: --> ";
