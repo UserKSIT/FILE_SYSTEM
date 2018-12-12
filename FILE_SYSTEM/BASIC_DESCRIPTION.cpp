@@ -335,6 +335,7 @@ int ProtectedDesfile::open(){
         //reserve_shift = shift_stream;
         ptr_stream = &temp;
         ptr_stream->open_stream_for_file(shift_stream);
+        size = 0;
         ptr_stream->push_stream(info, shift_stream, size);
         return 3;
         }
@@ -370,17 +371,48 @@ bool Desfile::close_file(){
 bool ProtectedDesfile::close_file(){
     if (tag == 1){
         tag = 0;
+        /*std::ostringstream out;
+        
+        out << *ptr;
+        
+        std::string info = out.str();
+        std::string key;
+        
+        TPasswordEncryptDecrypt enigma;
+        info = enigma.encryptMe(info, key);
+        
+        std::cout << info << std::endl;
+        
+        ptr->delete_info();
+        std::cout << "Ok" << std::endl;
+        
+        ProtectedDesfile crypt_f(p->first.name);
+        if(!crypt_f.replace_user(current_user, key)){
+            throw std::invalid_argument("Incorrect access");
+        }
+        crypt_f.write_file(info);
+        
+        Basic_description * ptr = &crypt_f;
+        ID buf(p->first.name);
+        buf.location = p->first.location;
+        buf.virtual_adress = p->first.virtual_adress;
+        replace(buf, ptr);
+        return true;*/
         std::string info = ptr_stream->return_info(shift_stream, size);
         std::string key;
         
         TPasswordEncryptDecrypt enigma;
         
         info = enigma.encryptMe(info, key);
-            
+        
+        
+        
         ptr_stream->delete_info(shift_stream, size);
+        replace_user(current_user, key);
         //shift_stream = reserve_shift;
         ptr_stream = &sym;
         ptr_stream->open_stream_for_file(shift_stream);
+        size = 0;
         ptr_stream->push_stream(info, shift_stream, size);
         return true;
     }

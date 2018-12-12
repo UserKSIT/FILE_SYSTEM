@@ -24,21 +24,26 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
     long int prev = 0;
     long int cur = 0;
     long int quant = info.size() / block;
+    
+    int extra = 2147483647;
 
     if (size == 0){
         int i;
             for (i = 0; i < quant; i++){
-                sys.write(info.substr(508*i, 508*(i + 1)).c_str(), 508);
+                //sys.write(info.substr(508*i, 508*(i + 1)).c_str(), 508);
+                sys << info.substr(508*i, 508*(i + 1));
                 
                 prev = sys.tellp();
-                sys.write("0", 4);
+                //sys.write("0", 4);
+                sys << extra;
                 sys.seekp(0, std::ios::end);
                 cur = sys.tellp();
                 sys.seekp(prev);
                 sys << cur;
                 sys.seekp(0, std::ios::end);
             }
-            sys.write(info.substr(508*i, info.size()).c_str(), info.size());
+            //sys.write(info.substr(508*i, info.size()).c_str(), info.size());
+        sys << info.substr(508*i, info.size());
     }
     else{
         int k = 1;
@@ -65,7 +70,8 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
         int i;
         for (i = 0; i < quant; i++){
                 prev = sys.tellp();
-                sys.write("0", 4);
+                //sys.write("0", 4);
+                sys << extra;
                 sys.seekp(0, std::ios::end);
                 cur = sys.tellp();
                 sys.seekp(prev);
@@ -73,12 +79,14 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
                 sys << cur;
                 sys.seekp(0, std::ios::end);
                     
-                sys.write(info.substr(info.size() - ruf - i * 508, info.size() - ruf - 508 * (i + 1)).c_str(), 508);
+                //sys.write(info.substr(info.size() - ruf - i * 508, info.size() - ruf - 508 * (i + 1)).c_str(), 508);
+            sys << info.substr(info.size() - ruf - i * 508, info.size() - ruf - 508 * (i + 1));
             }
         int non_empty = 0;
         for (int i = 0; i < 512; i++)
             sys << non_empty;
-        sys.write(info.substr(info.size() - ruf - i * 508, info.size()).c_str(), info.size());
+        //sys.write(info.substr(info.size() - ruf - i * 508, info.size()).c_str(), info.size());
+        sys << info.substr(info.size() - ruf - i * 508, info.size());
     }
     size += info.size();
     return true;

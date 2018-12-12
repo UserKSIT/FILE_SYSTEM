@@ -36,7 +36,9 @@ extern int quantity_catalog;
 
 using namespace std;
 struct ID{
+    //name object
     string name;
+    //way to object
     string location;
     //adress shift on disk(file)
     long int virtual_adress;
@@ -63,12 +65,13 @@ struct ID{
     //parent's absract class for classes "Descatalog" and "Desfile"
     class Basic_description{
     protected:
+        //name object
         std::string name;
         //size object - file or directory
         int size;
         //table access to object. Containing id user and level privileges
         map<const string, const string> access_user;
-        //way to object
+        //print data object
         virtual std::ostream & print(std::ostream &) const = 0;
     public:
        
@@ -90,18 +93,16 @@ struct ID{
         virtual bool close_file() = 0;
         
         
-        virtual std::ostream & write(std::ostream&) = 0;
-        virtual std::istream & read(std::istream&) = 0;
+       
         virtual std::string get_master() const = 0;
     
         virtual void write_file(const string &) = 0;
-        
-        friend std::istream& operator >> (std::istream&, map<const string, const string> &);
-        friend std::ostream& operator << (std::ostream&, map<const string, const string> &);
-        
-        
-        
+        friend std::ostream & operator << (std::ostream &flow, const Basic_description &object){return object.print(flow);}
         virtual ~Basic_description(){};
+        
+        virtual std::ostream & write(std::ostream&) = 0;
+        virtual std::istream & read(std::istream&) = 0;
+        friend std::istream& operator >> (std::istream&, map<const string, const string> &);
     };
 
     //Class description directory. Include in itself struct catalog - table containing file and subdirectory
@@ -162,6 +163,7 @@ struct ID{
         //return info about file
         virtual std::string get_status() const;
         //---------------------------------------------------------------------------------------------------------------------------------------------------
+        Basic_description * open_file(ID &, int &);
         //function put and extract object. It necessary for copy and moving object
         bool pull_in_buffer(ID &, ID &, Basic_description *&);
         bool extract_out_buffer(ID &, Basic_description *&);
@@ -175,7 +177,6 @@ struct ID{
         
         //---------------------------------------------------------------------------------------------------------------------------------------------------
         //waste (because catalog and file inherit from "Basic_description"
-        Basic_description * open_file(ID &, int &);
         virtual std::ostream & write(std::ostream&);
         virtual std::istream & read(std::istream&);
         virtual void write_file(const string &) {return;}

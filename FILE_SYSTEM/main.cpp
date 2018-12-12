@@ -56,8 +56,8 @@ int Extract(Descatalog *&);
 int Encrypt(Descatalog *&);
 int Decrypt(Descatalog *&);
 
-int Write(Desfile *);
-int Read(Desfile *);
+int Write(Basic_description *);
+int Read(Basic_description *);
 
 int Work(Desp_sys &);
 int Change_Table(Desp_sys &);
@@ -75,9 +75,9 @@ const std::string Menu_start[] = {"1. Start work", "2. Change table users", "3. 
 
 int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT, ShowT, Status, GetInfo, Copy, Pull, Extract, Encrypt, Decrypt, ChangeName};
 
-int(*Funcs_file1[])(Desfile *) = {nullptr, Read};
-int(*Funcs_file2[])(Desfile *) = {nullptr, Write};
-int(*Funcs_file3[])(Desfile *) = {nullptr, Write, Read};
+int(*Funcs_file1[])(Basic_description *) = {nullptr, Read};
+int(*Funcs_file2[])(Basic_description *) = {nullptr, Write};
+int(*Funcs_file3[])(Basic_description *) = {nullptr, Write, Read};
 
 int(*Func_work[])(Desp_sys &) = { nullptr, Work, Change_Table, Get_status};
 
@@ -362,7 +362,7 @@ int Work(Desp_sys &object){
     return 0;
 }
 
-int Write(Desfile *object){
+int Write(Basic_description *object){
     std::cin.clear();
     string info;
     std::cout << "Input info" << std::endl;
@@ -376,7 +376,7 @@ int Write(Desfile *object){
     return 0;
 }
 
-int Read(Desfile *object){
+int Read(Basic_description *object){
     std::cout << *object << std::endl;
     
     std::cout.clear();
@@ -462,21 +462,24 @@ int NextC(Descatalog *&view){
     return 0;
 }
 
-int OpenF(Descatalog *&view){//change read and write on virtual
+int OpenF(Descatalog *&view){
     std::cin.clear();
     std::string name;
     std::cout << "Enter a object name: --> ";
     std::cin >> name;
     if (!std::cin.good())
         throw std::invalid_argument("Error when a object name was entered");
+    
+    
     int res;
     ID buf(name);
     buf.name = name;
-    Basic_description * Bptr = view->open_file(buf, res);
+    
+    Basic_description * ptr = view->open_file(buf, res);
+    
     int ind;
     std::cin.clear();
     if (res > 0){
-        Desfile * ptr = dynamic_cast<Desfile *>(Bptr);
         if (res == 1){
             try {
                 while (ind = Answer(Menu_File_1, NumFile1))
