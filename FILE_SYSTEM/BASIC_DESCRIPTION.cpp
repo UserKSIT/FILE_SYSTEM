@@ -248,7 +248,7 @@ bool Basic_description::insert_access(const string &user, const string &mode){
     return res;
 }
 //insert in special table access for protected file
-bool ProtectedDesfile::insert_user(const string &user, const string& key){
+bool ProtectedDesfile::insert_user(const string &user, const string& key = ""){
     bool res = false;
     std::map<const string, const string>::iterator p = table_users_access.find(user);
     if (p == table_users_access.end()){
@@ -319,25 +319,44 @@ int ProtectedDesfile::open(){
     //check table_users_access
     std::map<const string, const string>::iterator p = table_users_access.find(current_user);
     if (p != table_users_access.end()){
-        tag = 1;
-        std::string info = ptr_stream->return_info(shift_stream, size);
-        std::string key;
-        
-        std::cout << info.substr(0, info.size() - 1) << std::endl;
-        
-        TPasswordEncryptDecrypt enigma;
-        std::cout << "Before -> " << info << std::endl;
-        info = enigma.decryptMe(info, key);
-        std::cout << "After -> " << info << std::endl;
-        
-        ptr_stream->delete_info(shift_stream, size);
-        
-        //reserve_shift = shift_stream;
-        ptr_stream = &temp;
-        ptr_stream->open_stream_for_file(shift_stream);
-        size = 0;
-        ptr_stream->push_stream(info, shift_stream, size);
-        return 3;
+        int res = 0;
+        std::string secret = check_access(current_user);
+        if (secret != ""){
+            if (secret == "r")
+            {
+                tag = 1;
+                res = 1;
+            }
+            if (secret == "w"){
+                tag = 1;
+                res = 2;
+            }
+            if (secret == "rw"){
+                tag = 1;
+                res = 3;
+            }
+            
+            std::string info = ptr_stream->return_info(shift_stream, size);
+            std::string key;
+            
+            std::cout << info.substr(0, info.size() - 1) << std::endl;
+            
+            TPasswordEncryptDecrypt enigma;
+            std::cout << "Before -> " << info << std::endl;
+            info = enigma.decryptMe(info, key);
+            std::cout << "After -> " << info << std::endl;
+            
+            ptr_stream->delete_info(shift_stream, size);
+            
+            //reserve_shift = shift_stream;
+            ptr_stream = &temp;
+            ptr_stream->open_stream_for_file(shift_stream);
+            size = 0;
+            ptr_stream->push_stream(info, shift_stream, size);
+            return res;
+        }
+        else
+            return 0;
         }
     else{
         std::cout << "Can't" << std::endl;
@@ -371,33 +390,6 @@ bool Desfile::close_file(){
 bool ProtectedDesfile::close_file(){
     if (tag == 1){
         tag = 0;
-        /*std::ostringstream out;
-        
-        out << *ptr;
-        
-        std::string info = out.str();
-        std::string key;
-        
-        TPasswordEncryptDecrypt enigma;
-        info = enigma.encryptMe(info, key);
-        
-        std::cout << info << std::endl;
-        
-        ptr->delete_info();
-        std::cout << "Ok" << std::endl;
-        
-        ProtectedDesfile crypt_f(p->first.name);
-        if(!crypt_f.replace_user(current_user, key)){
-            throw std::invalid_argument("Incorrect access");
-        }
-        crypt_f.write_file(info);
-        
-        Basic_description * ptr = &crypt_f;
-        ID buf(p->first.name);
-        buf.location = p->first.location;
-        buf.virtual_adress = p->first.virtual_adress;
-        replace(buf, ptr);
-        return true;*/
         std::string info = ptr_stream->return_info(shift_stream, size);
         std::string key;
         
@@ -970,6 +962,13 @@ bool Basic_description::remove_access(const string &name){
     else
         std::cout << "Not found" << std::endl;
     return res;
+}
+
+void ProtectedDesfile::show_table(){
+    std::map<const string, const string>::const_iterator p;
+    for (p = table_users_access.begin(); p != table_users_access.end(); p++)
+        std::cout << p->first << std::endl;
+    
 }
 
 

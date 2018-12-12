@@ -12,11 +12,8 @@
 #include "DESCRIPTION_SYSTEM.hpp"
 #include "gtest/gtest.h"
 
-//fix decrypt
+
 //set table_user_access
-//push now in crypt and decrypt
-//change get status for this
-//problem in descrypt and output info
 fstream sys;
 
 string current_user;
@@ -55,6 +52,7 @@ int Pull(Descatalog *&);
 int Extract(Descatalog *&);
 int Encrypt(Descatalog *&);
 int Decrypt(Descatalog *&);
+int SetPT(Descatalog *&);
 
 int Write(Basic_description *);
 int Read(Basic_description *);
@@ -66,14 +64,14 @@ int Get_status(Desp_sys &);
 char *Get_String(void);
 
 const std::string Menu_Catalog[] = { "1. Add a object", "2. Find a object",
-    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "8. Change table access","9. Show table access", "10. Get status","11. Get data", "12. Copy", "13. Put in the buffer", "14. Pull out the buffer", "15. Encrypt file", "16. Decrypt file", "17. Change name", "0. End work" };
+    "3. Delete a object", "4. Show all", "5. Open file", "6. Next catalog", "7. Back", "8. Change table access","9. Show table access", "10. Get status","11. Get data", "12. Copy", "13. Put in the buffer", "14. Pull out the buffer", "15. Encrypt file", "16. Decrypt file", "17. Change name", "18. Set table access for Protected File", "0. End work" };
 const std::string Menu_File_1[] = { "1. Show info", "0. Close file"};
 const std::string Menu_File_2[] = {"1. Write info", "0. Close file"};
 const std::string Menu_File_3[] = {"1. Write info", "2. Read info", "0. Close file"};
 
 const std::string Menu_start[] = {"1. Start work", "2. Change table users", "3. Show statistic", "0. Quit programm"};
 
-int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT, ShowT, Status, GetInfo, Copy, Pull, Extract, Encrypt, Decrypt, ChangeName};
+int(*Funcs[])(Descatalog *&) = { nullptr, Add, Find, Remove, ShowAll, OpenF, NextC, BackC, ChangeT, ShowT, Status, GetInfo, Copy, Pull, Extract, Encrypt, Decrypt, ChangeName, SetPT};
 
 int(*Funcs_file1[])(Basic_description *) = {nullptr, Read};
 int(*Funcs_file2[])(Basic_description *) = {nullptr, Write};
@@ -88,6 +86,65 @@ const int NumCatalog = sizeof(Menu_Catalog)/sizeof(Menu_Catalog[0]);
 const int NumFile1 = sizeof(Funcs_file1)/sizeof(Funcs_file1[0]);
 const int NumFile2 = sizeof(Funcs_file2)/sizeof(Funcs_file2[0]);
 const int NumFile3 = sizeof(Funcs_file3)/sizeof(Funcs_file3[0]);
+
+int SetPT(Descatalog *&view){
+    std::cin.clear();
+    std::string name;
+    std::cout << "Enter a name file: --> ";
+    std::cin >> name;
+    if (!std::cin.good())
+        throw std::invalid_argument("Error when a name was entered");
+    
+    ID buf(name);
+    bool flag;
+    map<ID, Basic_description *>::const_iterator p = view->find(buf, flag);
+    if (flag){
+        ProtectedDesfile * ptr = dynamic_cast<ProtectedDesfile *>(p->second);
+        if (ptr != nullptr){
+            if (current_user == ptr->get_master()){
+                int choice;
+                std::string id;
+                std::cout << "1. Add user" <<std::endl;
+                std::cout << "2. Remove user" << std::endl;
+                std::cout << "0. Quit" << std::endl;
+                ptr->show_table();
+                ltmp::GET_NUM(choice, 2);
+                
+                switch (choice) {
+                    case 0:
+                        break;
+                    case 1:
+                        std::cin.clear();
+                        std::cout << "Enter a id: --> ";
+                        std::cin >> id;
+                        if (!std::cin.good())
+                            throw std::invalid_argument("Error when a id was entered");
+                        
+                        ptr->insert_user(id, "");
+                        break;
+                    case 2:
+                        std::cin.clear();
+                        std::cout << "Enter a id: --> ";
+                        std::cin >> id;
+                        if (!std::cin.good())
+                            throw std::invalid_argument("Error when a id was entered");
+                        
+                        ptr->remove_user(id);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+                std::cout << "You haven't rules" << std::endl;
+        }else
+            std::cout << "Not found" << std::endl;
+    }
+    else
+        std::cout << "Not found" << std::endl;
+    
+    return 0;
+}
 
 int Decrypt(Descatalog *&view){
     std::cin.clear();
@@ -538,8 +595,8 @@ int main(int argc, char * argv[]) {
     
     
     
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+//    ::testing::InitGoogleTest(&argc, argv);
+//    return RUN_ALL_TESTS();
     
     Desp_sys SYSTEM;
     int ind;

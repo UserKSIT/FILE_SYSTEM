@@ -174,6 +174,9 @@ struct ID{
         //input? Check necessary
         friend std::istream& operator >> (std::istream&, Descatalog &);
         //---------------------------------------------------------------------------------------------------------------------------------------------------
+        //check
+        virtual std::string get_master() const {return check_access(current_user);}
+        //---------------------------------------------------------------------------------------------------------------------------------------------------
         
         //---------------------------------------------------------------------------------------------------------------------------------------------------
         //waste (because catalog and file inherit from "Basic_description"
@@ -181,7 +184,6 @@ struct ID{
         virtual std::istream & read(std::istream&);
         virtual void write_file(const string &) {return;}
         virtual bool close_file(){return false;}
-        virtual std::string get_master() const {return check_access(current_user);}
         virtual int open(){return 0;}
         //std::ostream& write(std::ostream& ostr, Descatalog const& pr);
         //std::istream& read(std::istream& istr, Descatalog const& pr);
@@ -259,6 +261,7 @@ public:
     
     bool insert_user(const string &, const string &);
     bool remove_user(const string &);
+    void show_table();
     
     virtual std::string get_master() const {return master;}
     
@@ -289,20 +292,9 @@ public:
 
 
 
-
-
-
 std::istream& read_access_user(std::istream&, map<const string, const string> &);
 std::istream& read_table_access_pf(std::istream&, map<const string, int> &);
 std::istream& read_struct_catalog(std::istream&, map<ID, Basic_description *> &);
-
-
-
-
-
-
-
-
 
 
 
