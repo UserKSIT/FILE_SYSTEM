@@ -31,11 +31,11 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
         int i;
             for (i = 0; i < quant; i++){
                 //sys.write(info.substr(508*i, 508*(i + 1)).c_str(), 508);
-                sys << info.substr(508*i, 508*(i + 1));
+                sys << info.substr(508*i, 508*(i + 1)) << '\n';
                 
                 prev = sys.tellp();
                 //sys.write("0", 4);
-                sys << extra;
+                sys << extra << '\n';
                 sys.seekp(0, std::ios::end);
                 cur = sys.tellp();
                 sys.seekp(prev);
@@ -60,18 +60,19 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
         sys.seekp(edge);
         
         if (info.size() <= 508 - residue_block){
-            sys << info;
+            sys << info << '\n';
             size += info.size();
             return true;
         }
-        sys.write(info.substr(0, block - residue_block).c_str(), block - residue_block);
+        //sys.write(info.substr(0, block - residue_block).c_str(), block - residue_block);
+        sys << info.substr(0, block - residue_block) << '\n';
         long int ruf = block - residue_block;
         
         int i;
         for (i = 0; i < quant; i++){
                 prev = sys.tellp();
                 //sys.write("0", 4);
-                sys << extra;
+                sys << extra << '\n';
                 sys.seekp(0, std::ios::end);
                 cur = sys.tellp();
                 sys.seekp(prev);
@@ -80,7 +81,7 @@ bool Desstream::push_stream(const string &info, const std::ios::pos_type &shift,
                 sys.seekp(0, std::ios::end);
                     
                 //sys.write(info.substr(info.size() - ruf - i * 508, info.size() - ruf - 508 * (i + 1)).c_str(), 508);
-            sys << info.substr(info.size() - ruf - i * 508, info.size() - ruf - 508 * (i + 1));
+            sys << info.substr(info.size() - ruf - i * 508, info.size() - ruf - 508 * (i + 1)) << '\n';
             }
         int non_empty = 0;
         for (int i = 0; i < 512; i++)
@@ -128,13 +129,19 @@ std::string Desstream::return_info(const std::ios::pos_type &shift, const int &s
     char * buf = new char[block];
     char * next = new char[4];
     int tmp;
+    std::string it;
+    std::string boy;
     
     for(int i = 0; i < quant; i++){
-        sys.read(buf, block);
+        //sys.read(buf, block);
+        getline(sys, it, '\n');
         
-        out << buf;
+        //out << buf;
+        out << it;
         
-        sys.read(next, 4);
+        //sys.read(next, 4);
+        //getline(sys, boy, '\n');
+        sys >> next;
         tmp = Input(next, 4);
         sys.seekg(tmp);
     }
@@ -154,7 +161,7 @@ std::ios::pos_type & Desstream::open_stream_for_file(std::ios::pos_type &shift){
     shift = sys.tellp() - virtual_adress;
     std::cout << shift << std::endl;
     int non_empty = 0;
-    for (int i = 0; i < 512; i++)
+    for (int i = 0; i < 514; i++)
         sys << non_empty;
    
     return shift;

@@ -538,8 +538,8 @@ int main(int argc, char * argv[]) {
     
     
     
-//    ::testing::InitGoogleTest(&argc, argv);
-//    return RUN_ALL_TESTS();
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
     
     Desp_sys SYSTEM;
     int ind;
@@ -563,7 +563,7 @@ TEST(StreamFunction, PushInfo){
     object.open_stream();
     string info = "Hello world!";
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 50; i++)
         object.write_file(info);
 
     std::cout << "Look -> ";
@@ -575,7 +575,7 @@ TEST(StreamFunction, ReturnInfo){
     object.open_stream();
     string info = "Hello world!";
     
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 50; i++)
         object.write_file(info);
     
     std::cout << "Look -> ";
@@ -587,7 +587,7 @@ TEST(StreamFunction, DeleteInfo){
     object.open_stream();
     string info = "Hello world!";
     
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 50; i++)
         object.write_file(info);
     
     std::cout << "Look before delete-> ";
